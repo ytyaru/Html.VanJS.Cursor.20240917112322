@@ -9,24 +9,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
     )
     van.add(document.querySelector('footer'),  new Footer('ytyaru', '../').make())
 
-    const loop = new Cursor.Loop()
-    /*
-    console.log(`i:${loop.i} l:${loop.l} d:${loop.d} q:${loop.q}`)
-    loop.next()
-    console.log(`i:${loop.i} l:${loop.l} d:${loop.d} q:${loop.q}`)
-    loop.next()
-    loop.next()
-    loop.next()
-    loop.next()
-    loop.next()
-    console.log(`i:${loop.i} l:${loop.l} d:${loop.d} q:${loop.q}`)
-    loop.next()
-    console.log(`i:${loop.i} l:${loop.l} d:${loop.d} q:${loop.q}`)
-    loop.next()
-    console.log(`i:${loop.i} l:${loop.l} d:${loop.d} q:${loop.q}`)
-    */
-//    ;[...Array(loop.l*2)].map(i=>{loop.next();loop.log();})
-
     ;['Loop','Yoyo','Stop'].map(c=>new Cursor[c](5)).map(c=>[...Array(c.l*3)].map(i=>{c.next();c.log();}))
 });
 window.addEventListener('beforeunload', (event) => {
