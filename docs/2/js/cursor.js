@@ -1,13 +1,19 @@
 ;(function(){
 class Range { // 範囲(int型)
-    constructor(min=0, max=7) {
+    //constructor(min=0, max=7) { this.set(min, max) }
+    constructor(min=0, max=7, onChangeMin=null, onChangeMax=null) {
+        this.onChangeMin = (this.#isFn(onChangeMin)) ? onChangeMin : ()=>{} 
+        this.onChangeMax = (this.#isFn(onChangeMax)) ? onChangeMax : ()=>{} 
         this.set(min, max)
     }
     set(min, max) {
         if (![min,max].every(v=>Number.isInteger(v))) {throw new TypeError(`min,maxはint型であるべきです。min:${min} max:${max}`)}
         if (max <= min) { throw new TypeError(`maxはminより大きい値であるべきです。min:${min} max:${max}`) }
+        const [oMin, oMax] = [this._min, this._max] // 旧値
         this._min = min
         this._max = max
+        if (oMin!==this._min) { this._onChangeMin(this) }
+        if (oMax!==this._max) { this._onChangeMax(this) }
     }
     get min( ) { return this._min }
     set min(v) { this.set(v, this._max) }
@@ -17,51 +23,77 @@ class Range { // 範囲(int型)
     withinThrow(v) { if (this.within(v)) { return true } else { throw new RangeError(`引数値は範囲外です。v:${v} min:${this._min} max:${this._max}`) } }
     withoutMin(v) { return v < this._min }
     withoutMax(v) { return this._max < v }
+    get onChangeMin( ) { return this._onChangeMin }
+    set onChangeMin(v) { if(this.#isFn(v)){this._onChangeMin =v} }
+    get onChangeMax( ) { return this._onChangeMax }
+    set onChangeMax(v) { if(this.#isFn(v)){this._onChangeMax=v} }
+    #isFn(v) { return ('function'===typeof v) }
+}
+class LengthRange extends Range { // 範囲(+長さ)
+    //constructor(min=0, max=7) { super(min, max) }
+    constructor(min=0, max=7, onShort=null, onLong=null, onChangeLength=null) {
+        super(min, max)
+        this.onShort = (this.#isFn(onShort)) ? onShort : ()=>{}
+        this.onLong = (this.#isFn(onLong)) ? onLong : ()=>{}
+        this.onChangeLength = (this.#isFn(onChangeLength)) ? onChangeLength : ()=>{} 
+    }
+    set(min, max) {
+        const len = this.len // 旧len
+        super.set(min, max)
+        this.len = this.len // 新len
+    }
+    get len( ) { return this._max - this._min + 1 }
+    set len(v) {
+        if (v-1 <= this._min) { throw new RangeError(`lenはminより大きい値であるべきです。len:${v} min:${this.min}`) }
+        const max = this._max // 旧max
+        this._max = v-1 // 新max
+             if (max < this._max) { this._onLong(this,max) }  // 長くなった
+        else if (this._max < max) { this._onShort(this,max) } // 短くなった
+        else {return}                                         // 同じ
+        this._onChangeLength(this,max)
+    }
+    get onLong( ) { return this._onLong }
+    set onLong(v) { if(this.#isFn(v)){this._onLong=v} }
+    get onShort( ) { return this._onShort }
+    set onShort(v) { if(this.#isFn(v)){this._onShort=v} }
+    get onChangeLength( ) { return this._onChange }
+    set onChangeLength(v) { if(this.#isFn(v)){this._onChange=v} }
+    #isFn(v) { return ('function'===typeof v) }
 }
 class RangeValue { // 範囲内にある値(int型)
-    constructor(min=0, max=7, v=0) {
-    //constructor(min=0, max=7, v=0, onWoMin=null, onWoMax=null) {
-        this._range = new Range(min, max)
+    constructor(min=0, max=7, v=0, onWoMin=null, onWoMax=null, onSet=null) {
+        this._range = new LengthRange(min, max, ()=>{if(this.r.max<this.v){this.v=this.r.max}})
+        this._range.onChangeMin = ()=>{if(this.v<this.r.min){this.v=this.r.min}}
+        this._range.onChangeMax = ()=>{if(this.r.max<this.v){this.v=this.r.max}}
+        this._onWoMin = this.#isFn(onWoMin) ? onWoMin : this.#onWoMin.bind(this)
+        this._onWoMax = this.#isFn(onWoMax) ? onWoMax : this.#onWoMax.bind(this)
+        this._onSet = this.#isFn(onSet) ? onSet : ()=>{}
         this.v = (v) ? v : min
-//        this._onWoMin = this.#isFn(onWoMin) ? onWoMin : this.#onWoMin.bind(this)
-//        this._onWoMax = this.#isFn(onWoMax) ? onWoMax : this.#onWoMax.bind(this)
     }
     get r() { return this._range }
     get v( ) { return this._v }
-    //set v(x) { this._range.withinThrow(x); this._v = x; }
     set v(v) {
         if (!Number.isInteger(v)) { throw new TypeError(`vはint型であるべきです。v:${v}`) }
-        this._range.withinThrow(v)
-        this._v = v
+             if (this.r.withoutMin(v)) { if(this._onWoMin(this,v)){return} }
+        else if (this.r.withoutMax(v)) { if(this._onWoMax(this,v)){return} }
+        else { this._v = v }
+        this._onSet(this,v)
     }
-    /*
-    set v(x) {
-        if (!Number.isInteger(x)) { throw new TypeError(`vはint型であるべきです。v:${x}`) }
-//             if (this.r.withoutMin(x)) { this._onWoMin(x) }
-//        else if (this.r.withoutMax(x)) { this._onWoMax(x) }
-             if (this.r.withoutMin(x)) { this._onWoMin(this,x) }
-        else if (this.r.withoutMax(x)) { this._onWoMax(this,x) }
-        else { this._v = x }
-    }
-    */
     set(min, max, v) { this._range.set(min, max); this.v = v; }
     get isMin() { return this._v === this._range.min }
     get isMax() { return this._v === this._range.max }
-    /*
     get onWoMin( ) { return this._onWoMin }
     set onWoMin(v) { if(this.#isFn(v)){this._onWoMin=v} }
     get onWoMax( ) { return this._onWoMax}
     set onWoMax(v) { if(this.#isFn(v)){this._onWoMax=v} }
+    get onSet( ) { return this._onSet}
+    set onSet(v) { if(this.#isFn(v)){this._onSet=v} }
     #isFn(v) { return ('function'===typeof v) }
     #onWoMin(v) { throw new RangeError(`vは不正値です。minを下回りました。v:${v} min:${this.min}`) }
     #onWoMax(v) { throw new RangeError(`vは不正値です。maxを上回りました。v:${v} max:${this.max}`) }
-    */
 }
-//class RangeCursor extends RangeValue { constructor(min=0, max=7, v=0) { super(min, max, v) } }
 class LengthCursor {
     constructor(l, fi=0) {
-    //constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-        this._l = l                    // Length
         this._fi = fi // first index  min index  index's offset
         //this._i = new RangeValue(fi, l+fi-1, fi, onWoMin, onWoMax) // RangeCursor
         this._i = new RangeValue(fi, l+fi-1, fi) // RangeCursor
@@ -69,26 +101,15 @@ class LengthCursor {
     get _v() { return this._i } // this._i.r.set(...) されると l との整合性が取れなくなるので取扱注意！
     get i() { return this._i.v }
     set i(v) { this._i.v = v }
-    get l() { return this._l }
-    set l(v) {
-        if (Number.isInteger(v) && 0 < v) {
-            this._l = v
-            const [i, l, fi] = [this._i.v, this.l, this._fi]
-            this._i.set(fi, l+fi-1, (i<l+fi) ? i : 0)
-        }
-//        const [i, l, fi] = [this._i.v, this.l, this._fi]
-//        this._i.set(fi, l+fi-1, (i<l+fi) ? i : 0)
-    }
-    get fi() { return this._fi }
-    get li() { return this._l + this._fi -1 }
-//    get _r() { return this._i.r } // range.set(...) されると l との整合性が取れなくなるので取扱注意！
+    get l() { return this._i.r.len }
+    set l(v) { this._i.r.len = v }
+    get fi() { return this._i.r.min }
+    get li() { return this._i.r.max }
     next() { this.i++ }
     prev() { this.i-- }
 }
 class QuantCursor extends LengthCursor {
     constructor(l, fi=0) {
-    //constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-        //super(l, fi, onWoMin, onWoMax)
         super(l, fi)
         this._q = 1 // 量(quantity)
     }
@@ -104,8 +125,6 @@ class DirCursor extends QuantCursor {
     }
     static get Dirs() { return this.#Dirs }
     constructor(l, fi=0) {
-    //constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-        //super(l, fi, onWoMin, onWoMax)
         super(l, fi)
         this._d = 1 // 方向
     }
@@ -116,77 +135,59 @@ class DirCursor extends QuantCursor {
 
     next() { this.i += (this.q * this.d) } // 指定した方向と量に従い移動する
     prev() { this.i += (this.q * (this.d * -1)) } // 指定したのと逆方向へ移動する
-    //prev() { console.log(`prev移動量:${(this.q * (this.d * -1))}`); this.i += (this.q * (this.d * -1)) } // 指定したのと逆方向へ移動する
 //    moveToPlus() { this.i += (this.q * IndexCursor.Dirs.Plus) }
 //    moveToMinus() { this.i += (this.q * IndexCursor.Dirs.Minus) }
 //    stepPlus()
 //    stepMinus()
     add() { this.i += (this.q * DirCursor.Dirs.Plus) } // +方向に移動する
     sub() { this.i += (this.q * DirCursor.Dirs.Minus) } // -方向に移動する
-}
-/*
-class RangeCursor extends DirCursor {
-    constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-        super(l, fi)
-    }
-    get i( ) { return super.i }
-    set i(v) {
-        if (!Number.isInteger(v)) { throw new TypeError(`vはint型であるべきです。v:${v}`) }
-             if (v < this.fi) { this._onWoMin(this) }
-        else if (this.li < v) { this._onWoMax(this) }
-        else { super.i = x }
-    }
 
-    get onWoMin( ) { return this._onWoMin }
-    set onWoMin(v) { if(this.#isFn(v)){this._onWoMin=v} }
-    get onWoMax( ) { return this._onWoMax}
-    set onWoMax(v) { if(this.#isFn(v)){this._onWoMax=v} }
-    #isFn(v) { return ('function'===typeof v) }
-    #onWoMin(v) { throw new RangeError(`vは不正値です。minを下回りました。v:${v} min:${this.min}`) }
-    #onWoMax(v) { throw new RangeError(`vは不正値です。maxを上回りました。v:${v} max:${this.max}`) }
-}
-*/
-/*
-class LoopCursor extends DirCursor {
-    constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-//        super(l, fi, (self)=>self.i = (self.fi===self.i) ? self.li : self.fi, 
-//                     (self)=>self.i = (self.li===self.i) ? self.fi : self.li)
-//        super(l, fi, (self)=>self._v = (self.r.min===self.v) ? self.r.max: self.r.min, 
-//                     (self)=>self._v = (self.r.max===self.v) ? self.r.min: self.r.max)
-        super(l, fi, (self)=>self._v = (self.r.min===self.v) ? self.r.max: self.r.min, 
-                     (self)=>self._v = (self.r.max===self.v) ? self.r.min: self.r.max)
-    }
     log() { console.log(`i:${this.i} l:${this.l} d:${this.d} q:${this.q}`) }
+}
+class LoopCursor extends DirCursor {
+    constructor(l, fi=0) {
+        super(l, fi)
+//        this._v.onWoMin = (self)=>self.i = (self.fi===self.i) ? self.li : self.fi
+//        this._v.onWoMax = (self)=>self.i = (self.li===self.i) ? self.fi : self.li
+//        this._v.onWoMin = (self)=>this.i = (this.fi===this.i) ? this.li : this.fi
+//        this._v.onWoMax = (self)=>this.i = (this.li===this.i) ? this.fi : this.li
+        this._v.onWoMin = ()=>this.i = (this.fi===this.i) ? this.li : this.fi
+        this._v.onWoMax = ()=>this.i = (this.li===this.i) ? this.fi : this.li
+    }
 }
 class YoyoCursor extends DirCursor {
     constructor(l, fi=0) {
-//        super(l, fi, (self)=>{ self.revD(); self.i += (self.q * self.d); },
-//                     (self)=>{ self.revD(); self.i = self.l + ((self.q + 1) * self.d) })
-        super(l, fi, (self)=>{ self.revD(); self.i += (self.q * self.d); },
-                     (self)=>{ self.revD(); self.i = self.l + ((self.q + 1) * self.d) })
+        super(l, fi)
+        this._v.onWoMin = (self,v)=>{ this.i = Math.abs(this.fi - v) % this.l; }
+        this._v.onWoMax = (self,v)=>{ this.i = this.l - Math.abs(v % this.l) }
+//        this._v.onWoMin = (self,v)=>{ self.i = Math.abs(self.fi - v) % self.l; }
+//        this._v.onWoMax = (self,v)=>{ self.i = self.l - Math.abs(v % self.l) }
+//        this._v.onWoMin = (self,v)=>{ self._v.v = Math.abs(self.fi - v) % self.l; }
+//        this._v.onWoMax = (self,v)=>{ self._v.v = self.l - Math.abs(v % self.l) }
+//        this._v.onWoMin = (self,v)=>{ this._v.v = Math.abs(this.fi - v) % this.l; }
+//        this._v.onWoMax = (self,v)=>{ this._v.v = this.l - Math.abs(v % this.l) }
+//        this._v.onWoMin = (self,v)=>{ this.i = self.fi + self.q; }
+//        this._v.onWoMax = (self)=>{ self.revD(); self._v.v = (self.li + 1) + ((self.q + 1) * self.d) }
+//        this._v.onWoMin = (self)=>{ if(-1===this.d){self.revD()}; self._v.v = self.fi + self.q; }
+//        this._v.onWoMax = (self)=>{ self.revD(); self._v.v = (self.li + 1) + ((self.q + 1) * self.d) }
     }
-    log() { console.log(`i:${this.i} l:${this.l} d:${this.d} q:${this.q}`) }
 }
 class StopCursor extends DirCursor {
     constructor(l, fi=0) {
-        super(l, fi, (self)=>self.i = self.fi,
-                     (self)=>self.i = self.li)
+        super(l, fi)
+        this._v.onWoMin = (self)=>self.i = self.fi
+        this._v.onWoMax = (self)=>self.i = self.li
     }
-    log() { console.log(`i:${this.i} l:${this.l} d:${this.d} q:${this.q}`) }
 }
-*/
 /*
-*/
 class WithoutCursor extends DirCursor {
     constructor(l, fi=0, onWoMin=null, onWoMax=null) {
-        //super(l, fi, onWoMin, onWoMax)
         super(l, fi)
         this.onWoMin = onWoMin
         this.onWoMax = onWoMax
     }
     get i( ) { return super.i }
     set i(v) {
-        //console.log(`WithoutCursor.i set v:${v} i:${this.i} isWoF:${v < this.fi}, `)
              if (v < this.fi) { this._onWoMin(this) }
         else if (this.li < v) { this._onWoMax(this) }
         else { super.i = v }
@@ -228,6 +229,7 @@ class StopCursor extends WithoutCursor {
                      (self)=>self.i = self.li)
     }
 }
+*/
 /*
 class Page extends LoopCursor {
     constructor(l=1, n=1) {

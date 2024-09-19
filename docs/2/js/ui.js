@@ -1,0 +1,231 @@
+;(function(){
+class PageLoopList {
+    constructor(options) {
+        this._o = options
+        this._data = new ListData({d:this._o.data, onValid:(v)=>Number.isInteger(v)})
+        this._cur = Cursor.Page.Loop(this._o.data.length, this._o.row)
+        this._listEl = new ListEl({row:this._o.row, onMake:this._o.onMake, height:this._o.height, onMakeChild:this._o.onMakeChild})
+        this._pageEl = new PageEl({})
+//        this._listEl = new ListEl({row:this._o.row})
+//        this._liEl = new ListItemEl({height:this._o.height})
+        this._config = {
+            key: new ListKeyConfig(),
+            pad: new ListPadConfig(),
+            touch: new ListMouseConfig(),
+            mouth: new ListTouchConfig(),
+        }
+        this._data.onSetDatas = (d)=>{
+            this._cur.L = d.length // カーソルの長さを更新する
+            this._listEl.remake() // HTML要素とイベントを再作成する delEvent(), make(), addEvent()
+            this._pageEl.remake() // HTML要素とイベントを再作成する delEvent(), make(), addEvent()
+        }
+        this._data.onSetData = (d,i)=>{
+            // HTML要素とイベントを再作成する（表示領域内なら）
+        }
+    }
+    get datas( ) { return this._data.d }
+    set datas(v) { this._data.d = v }
+    get data( ) { return this._data.d[this._cur.i] }
+    set data(v) { this._data.setData(v, this._cur.i) }
+    get i() { return this._cur.i } // 相対カーソル（最大表示項目数に対するカーソル位置0〜N）
+    get I() { return this._cur.I } // 絶対カーソル（全項目数に対するカーソル位置0〜N）
+    get p() { return this._cur.p.i } // 現ページ数（1〜N）
+    get P() { return this._cur.p.l } // 全ページ数（1〜N）
+    nextCursor() { this._cur.i++ }
+    prevCursor() { this._cur.i-- }
+    nextPage() { this._cur.p.i++ }
+    prevPage() { this._cur.p.i-- }
+    setCursor(i,p) {
+        if (i) { this._cur.i = i; }
+        if (p) { this._cur.p.i = p; }
+    }
+}
+class OptionSetter {
+    setOption(options) {
+        if (null!==options && 'object'===typeof options && Object===options.constructor) {
+            for (let key of Object.keys(options)) {
+                if (Object.getPrototypeOf(this).hasOwnProperty(key)) { this[key] = options[key] }
+            }
+        }
+    }
+}
+// data
+class ListData extends OptionSetter {
+    constructor(options) {
+        this._onValid = (d)=>true
+        this._onSetDatas = ()=>{}
+        this._onSetData = ()=>{}
+        this.d = d
+        this.setOption(options)
+    }
+    get d( ) { return this._d }
+    set d(v) { if (Array.isArray(v) && v.every(V=>this._onValid(V))) { this._d = v; this._onSetDatas(v); } }
+    setData(d,i) { if (this._onValid(d)) { this._d[i] = d; this._onSetData(d,i);  } }
+    get onValid( ) { return this._onValid }
+    set onValid(v) { if('function'===typeof v){this._onValid=v} }
+    get onSetDatas( ) { return this._onSetDatas }
+    set onSetDatas(v) { if('function'===typeof v){this._onSetDatas=v} }
+    get onSetData( ) { return this._onSetData }
+    set onSetData(v) { if('function'===typeof v){this._onSetData=v} }
+    #loadOptions(options) {
+        if (null!==options && 'object'===typeof options && Object===options.constructor) {
+            for (let key of Object.keys(options)) {
+                if (Object.getPrototypeOf(this).hasOwnProperty(key)) { this[key] = options[key] }
+            }
+        }
+    }
+}
+
+class ListEl {
+    constructor(options) {
+        this._o = options
+        this._ol = new OlEl({row:this._o.row, onMake:this._o.onMake})
+        this._li = new LiEl({height:this._o.height, onMakeChild:this._o.onMakeChild})
+    }
+    get ol() { return this._ol }
+    get li() { return this._li }
+}
+// ol要素
+class OlEl extends OptionSetter  {
+    constructor(options) {
+        this._num = {
+            row: 7,
+//            col: 1,
+        }
+        this._onMake = this.#onMake.bind(this)
+        this.setOption(options)
+    }
+    make() { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._item.height*this._state.row}px;overflow-y:auto;`}, this.#makeLis()) }
+    #makeLis() { return [...Array(this._state.row)].map((_,i)=>this._item.make(this._state.datas[i], i)) }
+    remake() { // 頁遷移したときにli要素の内容を更新する
+        this.#delEventLis()
+        const items = this.#nowPageItems
+        items.map((item,i)=>this.ol.children[i].replaceWith(this.#makeLi(item,i)))
+        if (items.length < this.row) {
+            const blankLen = this.row - items.length
+            const blankIdxs = [...Array(blankLen)].map((_,i)=>this.row - blankLen + i)
+            blankIdxs.map(idx=>this.ol.children[idx].style.display='none')
+        }
+        this.#addEventLis()
+
+    }
+}
+// li要素
+class LiEl extends OptionSetter {
+    constructor(options) {
+        this._size = {
+            //height: van.state(24),
+            height: 24,
+        }
+        this._onMakeChild = this.#onMakeChild.bind(this)
+        this.setOption(options)
+    }
+    #loadOptions(options) {
+        if (null!==options && 'object'===typeof options && Object===options.constructor) {
+            for (let key of Object.keys(options)) {
+                if (Object.getPrototypeOf(this).hasOwnProperty(key)) { this[key] = options[key] }
+            }
+        }
+    }
+    get height( ) { return this._size.height.val }
+    set height(v) { if(Number.isFinite(v) && 16<=v) { this._size.height.val = v; this.resize(); } }
+    get onMakeChild( ) { return this._onMakeChild }
+    set onMakeChild(v) { if('function'===typeof v) { this._onMakeChild = v } }
+    //make(data,i) { return van.tags.li({style:()=>`list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;`}, this._onMakeChild(data,i)) }
+    make(data,i) { return van.tags.li({style:this.#style.bind(this)}, this._onMakeChild(data,i)) }
+    //#style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;` }
+    #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height}px;` }
+    #onMakeChild(data,i) { return document.createTextNode(data.toString()) }
+}
+
+
+class PageEl {
+    constructor(cur) {
+        this._cur = cur
+    }
+    make() { return van.tags.div({}, 
+        van.tags.button({onclick:(e)=>--this._cur.p.i}, '◀'),
+        ()=>`${this._cur.p.i}/${this._cur.p.l}`,
+        van.tags.button({onclick:(e)=>++this._cur.p.i}, '▶'))
+    }
+
+}
+
+
+
+
+
+class ListConfig { // イベント
+    constructor() {
+        this._ol = new OlConfig()
+        this._li = new LiConfig()
+    }
+    get ol() { return this._ol }
+    get li() { return this._li }
+    #ids() { return ['ol','li'] }
+    addEvent() { this.#ids.map(id=>this.[`_${id}`].addEvent()) }
+    delEvent() { this.#ids.map(id=>this.[`_${id}`].delEvent()) }
+}
+class OlConfig {
+    constructor() {
+        this._key = new OlKeyConfig()
+        this._pad = new OlPadConfig()
+        this._touch = new OlMouseConfig()
+        this._mouth = new OlTouchConfig()
+    }
+    get key() { return this._key }
+    get pad() { return this._pad }
+    get touch() { return this._touch }
+    get mouse() { return this._mouse }
+    #ids() { return ['key','pad','touch','mouth'] }
+    addEvent() { this.#ids.map(id=>this.[`_${id}`].addEvent()) }
+    delEvent() { this.#ids.map(id=>this.[`_${id}`].delEvent()) }
+}
+class LiConfig {
+    constructor() {
+        this._key = new LiKeyConfig()
+        this._pad = new LiPadConfig()
+        this._touch = new LiMouseConfig()
+        this._mouth = new LiTouchConfig()
+    }
+    get key() { return this._key }
+    get pad() { return this._pad }
+    get touch() { return this._touch }
+    get mouse() { return this._mouse }
+    #ids() { return ['key','pad','touch','mouth'] }
+    addEvent() { this.#ids.map(id=>this.[`_${id}`].addEvent()) }
+    delEvent() { this.#ids.map(id=>this.[`_${id}`].delEvent()) }
+}
+class OlKeyConfig { // 上下左右, Sp/BkSp, Enter/Esc, PgUp/PgDn, Home/End
+
+}
+class OlPadConfig { // 上下左右, L1/R1, L2/R2, ○/✕ , 
+
+
+}
+class OlMouseConfig { // wheel
+
+}
+class OlTouchConfig { // swipe
+
+}
+
+class LiMouseConfig { // enter,leave,down
+
+}
+class LiTouchConfig { // tap
+
+}
+
+
+/*
+class LiKeyConfig {
+
+}
+class LiPadConfig {
+
+}
+*/
+
+})();
+
