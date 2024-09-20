@@ -17,7 +17,19 @@ window.addEventListener('DOMContentLoaded', (event) => {
     ;['Loop','Yoyo','Stop'].map(c=>new Cursor[c](5)).map(c=>[...Array(c.l*3)].map(i=>{c.next();c.log();}))
     console.log('----sub()----')
     ;['Loop','Yoyo','Stop'].map(c=>new Cursor[c](5)).map(c=>[...Array(c.l*3)].map(i=>{c.prev();c.log();}))
-});
+    console.log('----page.next()----')
+    const page = new Cursor.Page.Loop(10,4);
+    page.log()
+    ;[...Array(page.al*3)].map(I=>{page.next();page.log();})
+    console.log('----page.forward()----')
+    page.ai=3
+    page.log()
+    ;[...Array(page.al*3)].map(I=>{page.forward();page.log();})
+    console.log('----page.back()----')
+    page.ai=0
+    page.log()
+    ;[...Array(page.al*3)].map(I=>{page.back();page.log();})
+})
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
 });
