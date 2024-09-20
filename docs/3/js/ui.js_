@@ -1,50 +1,29 @@
 ;(function(){
-try { Type }
-catch (e) {
-    class _Type {
-        isFn(v) {return 'function'===typeof v}
-        isInt(v) {return Number.isInteger(v)}
-        isStr(v) {return 'string'===typeof v || v instanceof String}
-        isAry(v) {return Array.isArray(v)}
-        throw(msg) {throw new TypeError(msg) }
-    }
-    Type = new _Type
-}
 class ItemData {
-    constructor(data, onValid, onSetDatas=null, onSetData=null) {
+    constructor(data, onValid) {
         if (!Type.isAry(data)) {throw new TypeError(`dataは配列型であるべきです。`)}
-        this._onValid = (Type.isFn(onValid)) ? onValid : ()=>true
-        this._onSetDatas = (Type.isFn(onSetDatas)) ? : ()=>{}
-        this._onSetData = (Type.isFn(onSetData)) ? : ()=>{}
         this._data = data
+        this._onValid = (Type.isFn(onValid)) ? onValid : ()=>true
     }
     get d() { return this._data }
     set d(v) {
         if (!Type.isAry(v)) {throw new TypeError(`dataは配列型であるべきです。`)}
         if (!v.every(V=>this._onValid(V))) {throw new TypeError(`data要素の値はonValidが真を返す値であるべきです。`)}
         this._data = v
-        this._onSetDatas(this._data)
     }
     set(v,i) {
         if(!this._onValid(v)) {throw new TypeError(`data要素の値はonValidが真を返す値であるべきです。`)}
         if(i<0 || this.d.length-1<i) {throw new TypeError(`iはdata配列の範囲内であるべきです。i:${i} 0〜${this.d.length-1}`)}
         this.d[i] = v
-        this._onSetData(this.d[i], i)
     }
-    get onSetDatas( ) { return this._onSetDatas }
-    set onSetDatas(v) { if(Type.isFn(v)){this._onSetDatas=v} }
-    get onSetData( ) { return this._onSetData }
-    set onSetData(v) { if(Type.isFn(v)){this._onSetData=v} }
 }
 class PageLoopCursorData {
     constructor(options) {
         this._o = options
         //this._cur = new PageLoopCursor(this._o.data.length, this._o.row)
         this._cur = new Cursor.Page.Loop(this._o.data.length, this._o.row)
-        //this._data = new ItemData(this._o.data, this._o.onValidData, (d)=>this._cur.al = d.length)
         this._data = new ItemData(this._o.data, this._o.onValidData)
     }
-    get d() { return this._d }
     get c() { return this._cur }
     get selected() { return this._data.d[this._cur.ai] }
     get paged() { return  this._cur.pageAis.map(ai=>this._data.d[ai]) }
@@ -53,54 +32,10 @@ class PageLoopCursorData {
         this._cur.al = this._data.d.length
     }
 }
-class PageLoopList {
-    constructor(options) {
-        this._o = options
-        this._data = new PageLoopCursorData({data:this._o.data, onValidData:(v)=>Number.isInteger(v), row:this._o.row})
-        this._data.onSetDatas = (d)=>{
-            this._data.c.al = d.length
-            this._listEl.remake(this._data.paged)
-            this._pageEl.remake(this._data.d)
-        }
-//        this._data = new ListData({d:this._o.data, onValid:(v)=>Number.isInteger(v)})
-//        this._cur = Cursor.Page.Loop(this._o.data.length, this._o.row)
-        this._listEl = new ListEl({row:this._o.row, onMake:this._o.onMake, height:this._o.height, onMakeChild:this._o.onMakeChild})
-        this._pageEl = new PageEl({})
-//        this._listEl = new ListEl({row:this._o.row})
-//        this._liEl = new ListItemEl({height:this._o.height})
-        this._config = {
-            key: new ListKeyConfig(),
-            pad: new ListPadConfig(),
-            touch: new ListMouseConfig(),
-            mouth: new ListTouchConfig(),
-        }
-        this._data.onSetDatas = (d)=>{
-            this._cur.L = d.length // カーソルの長さを更新する
-            this._listEl.remake() // HTML要素とイベントを再作成する delEvent(), make(), addEvent()
-            this._pageEl.remake() // HTML要素とイベントを再作成する delEvent(), make(), addEvent()
-        }
-        this._data.onSetData = (d,i)=>{
-            // HTML要素とイベントを再作成する（表示領域内なら）
-        }
-    }
-    get datas( ) { return this._data.d }
-    set datas(v) { this._data.d = v }
-    get data( ) { return this._data.d[this._cur.i] }
-    set data(v) { this._data.setData(v, this._cur.i) }
-    get i() { return this._cur.i } // 相対カーソル（最大表示項目数に対するカーソル位置0〜N）
-    get I() { return this._cur.I } // 絶対カーソル（全項目数に対するカーソル位置0〜N）
-    get p() { return this._cur.p.i } // 現ページ数（1〜N）
-    get P() { return this._cur.p.l } // 全ページ数（1〜N）
-    nextCursor() { this._cur.i++ }
-    prevCursor() { this._cur.i-- }
-    nextPage() { this._cur.p.i++ }
-    prevPage() { this._cur.p.i-- }
-    setCursor(i,p) {
-        if (i) { this._cur.i = i; }
-        if (p) { this._cur.p.i = p; }
-    }
+class LiEl {
 
 }
+
 class PageLoopList {
     constructor(options) {
         this._o = options

@@ -201,6 +201,11 @@ class PageLoopCursor {
     get rl() { return this._r.l } // 一画面に表示する最大件数
     get pi() { return this._p.i } // p.now, p.all
     get pl() { return this._p.l } // p.now, p.all
+    get pageAis() {
+        const airl = this.ai + this.rl
+        const end = (this._a.li < airl) ? this._a.li : airl
+        return [...Array(end - this.ai)].map(v=>this.ai+v)
+    }
     set ai(v) {
         const [ai,ri,pi] = [this.ai, this.ri, this.pi]
         this._a.i = v
@@ -274,37 +279,7 @@ class PageLoopCursor {
     log () { console.log(`ai:${this.ai} al:${this.al} ri:${this.ri} rl:${this.rl} p:${this.pi}/${this.pl}`) }
 }
 
-class PageLoopCursorData {
-    constructor(options) {
-        this._o = options
-        this._cur = new PageLoopCursor(this._o.data.length, this._o.row)
-        this._data = new ItemData(this._o.data, this._o.onValidData)
-    }
-    get c() { return this._cur }
-    get selected() { return this._data.d[this._cur.ai] }
 
-    set d(v) {
-        this._data = v
-    }
-}
-class ItemData {
-    constructor(data, onValid) {
-        if (!Type.isAry(data)) {throw new TypeError(`dataは配列型であるべきです。`)}
-        this._data = data
-        this._onValid = (Type.isFn(onValid)) ? onValid : ()=>true
-    }
-    get d() { return this._data }
-    set d(v) {
-        if (!Type.isAry(v)) {throw new TypeError(`dataは配列型であるべきです。`)}
-        if (!v.every(V=>this._onValid(V))) {throw new TypeError(`data要素の値はonValidが真を返す値であるべきです。`)}
-        this._data = v
-    }
-    set(v,i) {
-        if(!this._onValid(v)) {throw new TypeError(`data要素の値はonValidが真を返す値であるべきです。`)}
-        if(i<0 || this.d.length-1<i) {throw new TypeError(`iはdata配列の範囲内であるべきです。i:${i} 0〜${this.d.length-1}`)}
-        this.d[i] = v
-    }
-}
 
 // Grid
 class LoopGridCursor {
