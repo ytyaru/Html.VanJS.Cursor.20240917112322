@@ -242,7 +242,7 @@ class PageLoopCursor {
     }
     set pi(v) {
         const [ai,ri,pi] = [this.ai, this.ri, this.pi]
-        this.p.i = v
+        this._p.i = v
              if (this._a.li < (this.ri + (this.rl * (this.pi-1)))) { this.ai = this._a.li }
         else if ((this.ri + (this.rl * (this.pi-1)) < this._a.fi)) { this.ai = this._a.fi }
         else { this.ai = this.ri + (this.rl * (this.pi-1)) }

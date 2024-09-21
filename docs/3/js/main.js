@@ -29,6 +29,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
     page.ai=0
     page.log()
     ;[...Array(page.al*3)].map(I=>{page.back();page.log();})
+
+    const pageElH = new PageEl({cursor:new Cursor.Page.Loop(10,4), dir:'horizontal'})
+    van.add(document.body, pageElH.make())
+    const pageElV = new PageEl({cursor:new Cursor.Page.Loop(10,4), dir:'vertical'})
+    van.add(document.body, pageElV.make())
 })
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
