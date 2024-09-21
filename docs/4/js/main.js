@@ -42,6 +42,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
         height: 24,
         onMakeChid: (d,i)=>document.createTextNode(d.toString()),
     })
+    van.add(document.body, listUi.el)
+    
 })
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');

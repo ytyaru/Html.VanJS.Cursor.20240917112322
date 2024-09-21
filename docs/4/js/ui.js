@@ -53,7 +53,7 @@ class PageLoopCursorData {
         //this._data = new ItemData(this._o.data, this._o.onValidData, (d)=>this._cur.al = d.length)
         this._data = new ItemData(this._o.data, this._o.onValidData)
     }
-    get d() { return this._d }
+    get d() { return this._data }
     get c() { return this._cur }
     get selected() { return this._data.d[this._cur.ai] }
     get paged() { return  this._cur.pageAis.map(ai=>this._data.d[ai]) }
@@ -107,8 +107,8 @@ class PageLoopList {
     }
     get el() { return this._el }
     get c() { return this._data.c }
-    get datas( ) { return this._data.d }
-    set datas(v) { this._data.d = v }
+    get datas( ) { return this._data.d.d }
+    set datas(v) { this._data.d.d = v }
     get data( ) { return this._data.d[this._cur.i] }
     set data(v) { this._data.setData(v, this._cur.i) }
     /*
@@ -125,7 +125,7 @@ class PageLoopList {
         if (p) { this._cur.p.i = p; }
     }
     */
-    #make() { return van.tags.div(this._listEl.make(this.datas), this._pageEl.make()) }
+    #make() { console.log(this.datas);return van.tags.div(this._listEl.make(this.datas), this._pageEl.make()) }
 }
 class ListEl {
     constructor(options) {
@@ -156,8 +156,8 @@ class OlEl extends OptionSetter  {
     set row(v) { if(Type.isInt(v)){this._num.row.val = v} }
     get onMake() { return this._onMake }
     set onMake(v) { if(Type.isFn(v)){this._onMake=v} }
-    make(data) { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._li.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data)) }
-    #makeLis(data) { return [...Array(this._num.row)].map((_,i)=>this._liEl.make(data[i], i)) }
+    make(data) { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data)) }
+    #makeLis(data) { console.log(data);return [...Array(this._num.row)].map((_,i)=>this._liEl.make(data[i], i)) }
         /*
     remake() { // 頁遷移したときにli要素の内容を更新する
         this.#delEventLis()
