@@ -84,7 +84,16 @@ class PageLoopList {
 //        this._data = new ListData({d:this._o.data, onValid:(v)=>Number.isInteger(v)})
 //        this._cur = Cursor.Page.Loop(this._o.data.length, this._o.row)
         this._listEl = new ListEl({row:this._o.row, onMake:this._o.onMake, height:this._o.height, onMakeChild:this._o.onMakeChild})
-        this._pageEl = new PageEl({cursor: this._data.c, dir: this._o.pageDir ?? 'horizontal'})
+        this._pageEl = new PageEl({cursor: this._data.c, dir: this._o.pageDir ?? 'horizontal', onPrev:(c)=>{
+            console.log(this._data, this._data.c.pageAis, c)
+            //this._listEl.remake(this._data.c.pageAis.map(v=>this._data.d.d[v]))
+            this._listEl.remake(this._data)
+        }, onNext:(c)=>{}})
+        this._pageEl = new PageEl({
+            cursor: this._data.c, 
+            dir: this._o.pageDir ?? 'horizontal', 
+            onPrev: (c)=>this._listEl.remake(this._data), 
+            onNext: (c)=>this._listEl.remake(this._data)})
 //        this._listEl = new ListEl({row:this._o.row})
 //        this._liEl = new ListItemEl({height:this._o.height})
 /*
@@ -107,10 +116,11 @@ class PageLoopList {
     }
     get el() { return this._el }
     get c() { return this._data.c }
-    get datas( ) { return this._data.d.d }
-    set datas(v) { this._data.d.d = v }
-    get data( ) { return this._data.d[this._cur.i] }
-    set data(v) { this._data.setData(v, this._cur.i) }
+    get data( ) { return this._data }
+//    get datas( ) { return this._data.d.d }
+//    set datas(v) { this._data.d.d = v }
+//    get data( ) { return this._data.d[this._cur.i] }
+//    set data(v) { this._data.setData(v, this._cur.i) }
     /*
     get ai() { return this.c.ai } // 相対カーソル（最大表示項目数に対するカーソル位置0〜N）
     get ri() { return this.c.ri } // 絶対カーソル（全項目数に対するカーソル位置0〜N）
@@ -125,17 +135,35 @@ class PageLoopList {
         if (p) { this._cur.p.i = p; }
     }
     */
-    #make() { console.log(this.datas);return van.tags.div(this._listEl.make(this.datas), this._pageEl.make()) }
+    //#make() { console.log(this.datas);return van.tags.div(this._listEl.make(this.datas), this._pageEl.make()) }
+    #make() { console.log(this.data);return van.tags.div(this._listEl.make(this.data), this._pageEl.make()) }
 }
 class ListEl {
     constructor(options) {
         this._o = options
         this._li = new LiEl({height:this._o.height, onMakeChild:this._o.onMakeChild})
         this._ol = new OlEl({row:this._o.row, onMake:this._o.onMake, liEl:this._li})
+        this._el = null
     }
     get ol() { return this._ol }
     get li() { return this._li }
-    make(data) { return this.ol.make(data) }
+    make(data) {
+        if (this._el) { this.#delEvent() }
+        this._el = this.ol.make(data)
+        this.#addEvent()
+        return this._el
+    }
+    remake(data) {
+        if (this._el) { this.#delEvent() }
+        this.ol.remake(data)
+        this.#addEvent()
+    }
+    #addEvent() {
+
+    }
+    #delEvent() {
+
+    }
 }
 // ol要素
 class OlEl extends OptionSetter  {
@@ -151,13 +179,44 @@ class OlEl extends OptionSetter  {
         }
         this._onMake = ((Type.isFn(this._o.onMake)) ? this._o.onMake : ()=>{})
         this.setOption(options)
+        this._el = null
     }
     get row() { return this._num.row.val }
     set row(v) { if(Type.isInt(v)){this._num.row.val = v} }
     get onMake() { return this._onMake }
     set onMake(v) { if(Type.isFn(v)){this._onMake=v} }
-    make(data) { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data)) }
-    #makeLis(data) { console.log(data);return [...Array(this._num.row)].map((_,i)=>this._liEl.make(data[i], i)) }
+    make(data) {
+        if (this._el) { this.delEvent() }
+        this._el = van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data))
+        this.addEvent()
+        return this._el
+    }
+    remake(data) { this._el.replaceWith(this.make(data)) }
+    //make(data) { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data)) }
+    //#makeLis(data) { console.log(data);return [...Array(this._num.row)].map((_,i)=>this._liEl.make(data[i], i)) }
+    //#makeLis(data) { console.log(data, data.c.pageAis);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(d,i)) }
+    //#makeLis(data) { console.log(data, data.c.pageAis, data.d, data.d.d);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(data.d.d[d],i)) }
+    #makeLis(data) { return data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i)) }
+
+    addEvent() {
+        /*
+        if (!this.ol) {return}
+        this.#addEventLis()
+        this.ol.addEventListener('wheel', this.#onWheel.bind(this), {passive:false})
+        this.ol.addEventListener('mouseup', this.#onMouseUp.bind(this))
+        this.ol.addEventListener('keydown', this.#onKeyDown.bind(this))
+        */
+    }
+    delEvent() {
+        /*
+        if (!this.el) {return}
+        this.#delEventLis()
+        this.ol.removeEventListener('wheel', this.#onWheel.bind(this), {passive:false})
+        this.ol.removeEventListener('mouseup', this.#onMouseUp.bind(this))
+        this.ol.removeEventListener('keydown', this.#onKeyDown.bind(this))
+        */
+    }
+
         /*
     remake() { // 頁遷移したときにli要素の内容を更新する
         this.#delEventLis()
@@ -260,30 +319,50 @@ class LiEl extends OptionSetter {
     make(data,i) { return van.tags.li({style:this.#style.bind(this)}, this._onMakeChild(data,i)) }
     //#style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;` }
     #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height}px;` }
-    #onMakeChild(data,i) { return document.createTextNode(data.toString()) }
+    #onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
 }
-class PageEl {
+class PageEl extends OptionSetter {
     //constructor(cur) {
     constructor(options) {
+        super()
         this._o = options
         this._cur = this._o.cursor // PageLoopCursor 
         this._now = van.state(this._cur.pi)
         this._all = van.state(this._cur.pl)
         this._dir = van.state('horizontal') // vertical
         this.dir = this._o.dir
+        this._onPrev = ()=>{}
+        this._onNext = ()=>{}
         console.log(options, this.dir)
+        this.setOption(options)
     }
     get now() { return this._now.val }
     get all() { return this._all.val }
     get dir() { return this._dir.val }
     set now(v) { this._now.val = v }
     set all(v) { this._all.val = v }
-    set dir(v) { if (['horizontal','vertical'].some(V=>V===v)) { this._dir.val = v } }
+    set dir(v) { if (['horizontal','vertical'].some(V=>V===v)) { this._dir.val = v } }l
+    get onPrev( ) { return this._onPrev }
+    set onPrev(v) { if(Type.isFn(v)){this._onPrev=v} }
+    get onNext( ) { return this._onNext }
+    set onNext(v) { if(Type.isFn(v)){this._onNext=v} }
+
     make() { return van.tags.div({style:this.#style.bind(this)}, 
-        van.tags.button({onclick:(e)=>{--this._cur.pi;this.now=this._cur.pi;console.log(`pi:${this._cur.pi}`);}}, this.#makePrevBtnTxt()),
+        //van.tags.button({onclick:(e)=>{--this._cur.pi;this.now=this._cur.pi;console.log(`pi:${this._cur.pi}`);}}, this.#makePrevBtnTxt()),
+        van.tags.button({onclick:(e)=>{
+            --this._cur.pi
+            this.now = this._cur.pi
+            console.log(`pi:${this._cur.pi}`)
+            this.onPrev(this._cur)
+            }}, this.#makePrevBtnTxt()),
 //        ()=>`${this.now}/${this.all}`,
         this.#makePage.bind(this),
-        van.tags.button({onclick:(e)=>{++this._cur.pi;this.now=this._cur.pi;console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+        //van.tags.button({onclick:(e)=>{++this._cur.pi;this.now=this._cur.pi;console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+        van.tags.button({onclick:(e)=>{
+            ++this._cur.pi
+            this.now = this._cur.pi
+            this.onNext(this._cur)
+            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
     }
     #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
     #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
