@@ -86,12 +86,17 @@ class PageLoopList {
             row: this._o.row, 
             onMake: this._o.onMake, 
             height: this._o.height, 
-            onSetHeight : ()=>,
+            onSetHeight : ()=>{},
             onMakeChild: this._o.onMakeChild,
             onMouseEnter: (e)=>{
                 this._el.focus()
+                console.log(this._listEl.lis, e.target)
                 this._data.c.ri = this._listEl.lis.indexOf(e.target)
                 this.#show()
+//                this.#clear()
+                //const selected = this._listEl.lis.indexOf(e.target)
+//                const selected = this._listEl.lis.filter((li,i)=>li===e.target)[0]
+//                selected.classList.add('selected');
             },
             onMouseLeave: (e)=>{
                 this.#clear()
@@ -166,8 +171,12 @@ class ListEl {
     get el() { return this._el }
     get ol() { return this._ol }
     get li() { return this._li }
-    get lis() { return this._li.els }
+    get lis() { return this._ol.lis }
+    make(data) { this._el = this.ol.make(data); return this._el; }
+    remake(data) { this.ol.remake(data) }
+    /*
     make(data) {
+        console.log(`ListEl.make`)
         if (this._el) { this.#delEvent() }
         this._el = this.ol.make(data)
         this.#addEvent()
@@ -178,6 +187,7 @@ class ListEl {
         this.ol.remake(data)
         this.#addEvent()
     }
+    */
     #addEvent() {
         this._ol.addEvent()
         this._li.addEvent()
@@ -211,6 +221,7 @@ class OlEl extends OptionSetter  {
     get onMake() { return this._onMake }
     set onMake(v) { if(Type.isFn(v)){this._onMake=v} }
     make(data) {
+        console.log(`OlEl.make`)
         if (this._el) { this.delEvent() }
         this._el = van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data))
         this.addEvent()
@@ -223,9 +234,12 @@ class OlEl extends OptionSetter  {
     //#makeLis(data) { console.log(data, data.c.pageAis, data.d, data.d.d);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(data.d.d[d],i)) }
     //#makeLis(data) { return data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i)) }
     #makeLis(data) {
+        console.log(`OlEl.#makeLis`, data)
         if (this._lis) { this._lis.map(li=>this._liEl.delEvent(li)) }
         this._lis = data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i))
+        console.log(this._lis)
         this._lis.map(li=>this._liEl.addEvent(li))
+        console.log(`OlEl.#makeLis end`)
         return this._lis
     }
 
@@ -362,16 +376,25 @@ class LiEl extends OptionSetter {
     #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height}px;` }
     #onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
     addEvent(li) {
-        li.addEventListener('mouseenter', this.#onMouseEnter.bind(this))
-        li.addEventListener('mouseleave', this.#onMouseLeave.bind(this))
+        console.log(`LiEl.addEvent: `,li)
+        li.addEventListener('mouseenter', this._onMouseEnter)
+        li.addEventListener('mouseleave', this._onMouseLeave)
+//        li.addEventListener('mouseenter', this._onMouseEnter.bind(this))
+//        li.addEventListener('mouseleave', this._onMouseLeave.bind(this))
+//        li.addEventListener('mouseenter', this.#onMouseEnter.bind(this))
+//        li.addEventListener('mouseleave', this.#onMouseLeave.bind(this))
 //        this._els.map(li=>li.addEventListener('mouseenter', this.#onMouseEnter.bind(this)))
 //        this._els.map(li=>li.addEventListener('mouseleave', this.#onMouseLeave.bind(this)))
         //this.#lis.map(li=>li.addEventListener('mouseenter', this.#onMouseEnter.bind(this)))
         //this.#lis.map(li=>li.addEventListener('mouseleave', this.#onMouseLeave.bind(this)))
     }
     delEvent(li) {
-        li.removeEventListener('mouseenter', this.#onMouseEnter.bind(this))
-        li.removeEventListener('mouseleave', this.#onMouseLeave.bind(this))
+        li.removeEventListener('mouseenter', this._onMouseEnter)
+        li.removeEventListener('mouseleave', this._onMouseLeave)
+//        li.removeEventListener('mouseenter', this._onMouseEnter.bind(this))
+//        li.removeEventListener('mouseleave', this._onMouseLeave.bind(this))
+//        li.removeEventListener('mouseenter', this.#onMouseEnter.bind(this))
+//        li.removeEventListener('mouseleave', this.#onMouseLeave.bind(this))
 //        this._els.map(li=>li.removeEventListener('mouseenter', this.#onMouseEnter.bind(this)))
 //        this._els.map(li=>li.removeEventListener('mouseleave', this.#onMouseLeave.bind(this)))
 //        this.#lis.map(li=>li.removeEventListener('mouseenter', this.#onMouseEnter.bind(this)))

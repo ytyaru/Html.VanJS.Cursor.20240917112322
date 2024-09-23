@@ -16,3 +16,15 @@ img.icon {
 footer {
     text-align:center;
 }
+/*
+body,div{padding:0;margin:0;}
+img.icon {width:1em;height:1em;}
+footer {text-align:center;}
+ol[name="hands"] {padding:0;margin:0;box-sizing:border-box;}
+ol[name="hands"] li {
+    list-style-type: none;
+    box-sizing:border-box;
+    border: 1px solid black;
+}
+*/
+.selected {background-color:red;}

@@ -202,6 +202,16 @@ class PageLoopCursor {
     get pi() { return this._p.i } // p.now, p.all
     get pl() { return this._p.l } // p.now, p.all
     get pageAis() {
+        // p   s   e
+        // 1   0   7
+        // 2   7  14
+        // 15 98 100
+        const s = (this.pi - 1) * this.rl
+        const e = ((s + this.rl) < this.al) ? s + this.rl : this.al
+        return [...Array(e-s)].map((_,i)=>s+i)
+    }
+    /*
+    get pageAis() {
         //const airl = this.ai + this.rl
         const airl = this.ai + this.rl - 1
         const end = (this._a.li < airl) ? this._a.li : airl
@@ -209,6 +219,7 @@ class PageLoopCursor {
         return [...Array(end - this.ai + 1)].map((_,i)=>this.ai+i)
         //return [...Array(end - this.ai)].map((_,i)=>this.ai+i)
     }
+    */
     set ai(v) {
         const [ai,ri,pi] = [this.ai, this.ri, this.pi]
         this._a.i = v
@@ -219,28 +230,28 @@ class PageLoopCursor {
         if (pi!==this._p.i) { this._onChangePi(this) }
     }
     set al(v) {
-        const ci = this.a.i
-        const pi = this.p.i
-        this.c.l = v
-        this.p.l = Math.floor(this.al / this.rl)
-        c.i = (c.l<=ci) ? c.fi : ci
-        p.i = (p.l<=pi) ? p.fi : pi
+        const ci = this.ai
+        const pi = this.pi
+        this._c.l = v
+        this._p.l = Math.floor(this.al / this.rl)
+        this._c.i = (this._c.l<=ci) ? this._c.fi : ci
+        this._p.i = (this._p.l<=pi) ? this._p.fi : pi
     }
     set rl(v) { this._r.l = v }
     set ri(v) {
         if (v < this._r.fi) {
             this._r.i = v
-            this.p.i--
-            this._a.i = this._r.i + ((this.p.i - 1) * this.rl)
+            this._p.i--
+            this._a.i = this._r.i + ((this._p.i - 1) * this.rl)
         }
         else if (this._r.li < v) {
             this._r.i = v
-            this.p.i++
-            this._a.i = this._r.i + ((this.p.i - 1) * this.rl)
+            this._p.i++
+            this._a.i = this._r.i + ((this._p.i - 1) * this.rl)
         }
         else {
             this._r.i = v
-            this._a.i = this._r.i + ((this.p.i - 1) * this.rl)
+            this._a.i = this._r.i + ((this._p.i - 1) * this.rl)
         }
     }
     set pi(v) {
