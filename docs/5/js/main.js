@@ -43,7 +43,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
         onMakeChid: (d,i)=>document.createTextNode(d.toString()),
     })
     van.add(document.body, listUi.el)
-    
+ 
+
+    const listUiA = new PageLoopList({
+        data: [...Array(26)].map((v, i) => String.fromCodePoint(i + 65)),
+        row: 3,
+        onMake: ()=>{},
+        height: 24,
+        onMakeChid: (d,i)=>document.createTextNode(d.toString()),
+    })
+    van.add(document.body, listUiA.el)
 })
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');

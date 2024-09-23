@@ -27,4 +27,5 @@ ol[name="hands"] li {
     border: 1px solid black;
 }
 */
-.selected {background-color:red;}
+ol:not(:focus) li.selected {background-color:pink;}
+ol:focus li.selected {background-color:red;}

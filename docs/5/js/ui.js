@@ -89,7 +89,8 @@ class PageLoopList {
             onSetHeight : ()=>{},
             onMakeChild: this._o.onMakeChild,
             onMouseEnter: (e)=>{
-                this._el.focus()
+                //this._el.focus()
+                this._listEl.ol.el.focus()
                 console.log(this._listEl.lis, e.target)
                 this._data.c.ri = this._listEl.lis.indexOf(e.target)
                 this.#show()
@@ -99,14 +100,38 @@ class PageLoopList {
 //                selected.classList.add('selected');
             },
             onMouseLeave: (e)=>{
-                this.#clear()
+                //this.#clear()
+            },
+            onWheelUp: ()=>{this._data.c.pi--;this.#update();},
+            onWheelDown: ()=>{this._data.c.pi++;this.#update();},
+//            onWheelUp: ()=>{this._data.c.pi--;this._listEl.remake(this._data);this.#show();this._pageEl.now=this._data.c.pi;},
+//            onWheelDown: ()=>{this._data.c.pi++;this._listEl.remake(this._data);this.#show();this._pageEl.now=this._data.c.pi;},
+
+            onWheelLeft: ()=>{},
+            onWheelRight: ()=>{},
+            onKeyDown: (e)=>{
+//                     if ('ArrowUp'===e.key) {this._data.c.ri--;this.#update();}
+//                else if ('ArrowDown'===e.key) {this._data.c.ri++;this.#update();}
+                     if ('ArrowUp'===e.key) {this._data.c.ai--;this.#update();}
+                else if ('ArrowDown'===e.key) {this._data.c.ai++;this.#update();}
+                else if ('ArrowLeft'===e.key) {this._data.c.pi--;this.#update();}
+                else if ('ArrowRight'===e.key) {this._data.c.pi++;this.#update();}
+                else if (' '===e.key && e.shiftKey) {this._data.c.pi--;this.#update();}
+                else if (' '===e.key) {this._data.c.pi++;this.#update();}
+                else if ('PageUp'===e.key) {this._data.c.pi--;this.#update();}
+                else if ('PageDown'===e.key) {this._data.c.pi++;this.#update();}
+                else {}
             },
         })
         this._pageEl = new PageEl({
             cursor: this._data.c, 
             dir: this._o.pageDir ?? 'horizontal', 
-            onPrev: (c)=>this._listEl.remake(this._data), 
-            onNext: (c)=>this._listEl.remake(this._data)
+//            onPrev: (c)=>this._listEl.remake(this._data), 
+//            onNext: (c)=>this._listEl.remake(this._data),
+//            onPrev: (c)=>{this._data.c.back(); this._listEl.remake(this._data);}, 
+//            onNext: (c)=>{this._data.c.forward(); this._listEl.remake(this._data);},
+            onPrev: (c)=>{this._listEl.remake(this._data);this.#show();}, 
+            onNext: (c)=>{this._listEl.remake(this._data);this.#show();},
         })
 /*
         this._config = {
@@ -126,12 +151,18 @@ class PageLoopList {
         }
         this._el = this.#make()
     }
+    #update() {
+        this._listEl.remake(this._data)
+        this.#show()
+        this._pageEl.now=this._data.c.pi;
+        this._listEl.ol.el.focus()
+    }
     get el() { return this._el }
     get c() { return this._data.c }
     get data( ) { return this._data }
 
     get paged() { return this._listEl.lis }
-    get selected() { return this._listEl.lis[this._data.c.ri] }
+    get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
     #show() {this.#clear(); this.selected.classList.add('selected');}
     //#clear() {this._listEl.lis.filter(li=>li.classList.contains('selected')).map(li=>li.classList.remove('selected'))}
     #clear() {this._listEl.lis.map(li=>li.classList.remove('selected'))}
@@ -165,7 +196,14 @@ class ListEl {
             onMakeChild: this._o.onMakeChild, 
             onMouseEnter:this._o.onMouseEnter,
             onMouseLeave:this._o.onMouseLeave})
-        this._ol = new OlEl({row:this._o.row, onMake:this._o.onMake, liEl:this._li})
+        this._ol = new OlEl({
+            row:this._o.row, onMake:this._o.onMake, liEl:this._li,
+            onWheelUp: this._o.onWheelUp,
+            onWheelDown: this._o.onWheelDown,
+            onWheelLeft: this._o.onWheelLeft,
+            onWheelRight: this._o.onWheelRight,
+            onKeyDown : this._o.onKeyDown,
+        })
         this._el = null
     }
     get el() { return this._el }
@@ -251,6 +289,10 @@ class OlEl extends OptionSetter  {
         this.ol.addEventListener('mouseup', this.#onMouseUp.bind(this))
         this.ol.addEventListener('keydown', this.#onKeyDown.bind(this))
         */
+
+        this.el.addEventListener('wheel', this.#onWheel.bind(this), {passive:false})
+        //this.el.addEventListener('wheel', this._onWheel.bind(this), {passive:false})
+        this.el.addEventListener('keydown', this.#onKeyDown.bind(this))
     }
     delEvent() {
         /*
@@ -260,7 +302,35 @@ class OlEl extends OptionSetter  {
         this.ol.removeEventListener('mouseup', this.#onMouseUp.bind(this))
         this.ol.removeEventListener('keydown', this.#onKeyDown.bind(this))
         */
+        this.el.removeEventListener('wheel', this.#onWheel.bind(this), {passive:false})
+        this.el.removeEventListener('keydown', this.#onKeyDown.bind(this))
     }
+    #onWheel(e) {
+        console.log(`Wheel:`, e)
+        this.el.focus()
+        if (e.deltaY<0) { this.onWheelUp(e) }
+        else if (0<e.deltaY) { this.onWheelDown(e) }
+        else if (e.deltaX<0) { this.onWheelLeft(e) }
+        else if (0<e.deltaX) { this.onWheelRight(e) }
+        e.preventDefault()
+    }
+    get onWheelUp( ) { return this._onWheelUp }
+    set onWheelUp(v) { if(Type.isFn(v)){this._onWheelUp=v} }
+    get onWheelDown( ) { return this._onWheelDown }
+    set onWheelDown(v) { if(Type.isFn(v)){this._onWheelDown=v} }
+    get onWheelLeft( ) { return this._onWheelLeft }
+    set onWheelLeft(v) { if(Type.isFn(v)){this._onWheelLeft=v} }
+    get onWheelRight( ) { return this._onWheelRight }
+    set onWheelRight(v) { if(Type.isFn(v)){this._onWheelRight=v} }
+    get onKeyDown( ) { return this._onKeyDown }
+    set onKeyDown(v) { if(Type.isFn(v)){this._onKeyDown=v} }
+    #onKeyDown(e) {
+        console.log(`keydown: ${e.key}`)
+        if (event.isComposing || event.keyCode === 229) {return} // IME変換中操作を無視する
+        else {this.onKeyDown(e)}
+        e.preventDefault()
+    }
+
 
         /*
     remake() { // 頁遷移したときにli要素の内容を更新する
@@ -373,7 +443,7 @@ class LiEl extends OptionSetter {
     }
     */
     //#style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;` }
-    #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height}px;` }
+    #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this.height}px;` }
     #onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
     addEvent(li) {
         console.log(`LiEl.addEvent: `,li)
