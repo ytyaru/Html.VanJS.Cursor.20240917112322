@@ -204,6 +204,7 @@ class ListEl {
             onWheelRight: this._o.onWheelRight,
             onKeyDown : this._o.onKeyDown,
         })
+        //this._lisCache = data.d.d.map((d,i)=>this._liEl.make(data.d.d[d],i))
         this._el = null
     }
     get el() { return this._el }
@@ -250,6 +251,7 @@ class OlEl extends OptionSetter  {
         this._onMake = ((Type.isFn(this._o.onMake)) ? this._o.onMake : ()=>{})
         this._el = null
         this._lis = null
+        this._lisCache = null
         this.setOption(options)
     }
     get el() { return this._el }
@@ -327,9 +329,19 @@ class OlEl extends OptionSetter  {
     #onKeyDown(e) {
         console.log(`keydown: ${e.key}`)
         if (event.isComposing || event.keyCode === 229) {return} // IME変換中操作を無視する
-        else {this.onKeyDown(e)}
+        //else {this.onKeyDown(e)}
+        else {this.#debounce(()=>this.onKeyDown(e), 100)(e)}
         e.preventDefault()
     }
+    // 最後の一回だけ実行する https://www.webdesignleaves.com/pr/jquery/resizeObserver.html#h4_index_26
+    #debounce(func, delay=300) { // 最後に呼び出されてからdelayミリ秒後に一回だけ実行する
+        let timer = null
+        return (...args) => {
+            clearTimeout(timer)
+            timer = setTimeout(() => func.apply(null, args), delay);
+        }
+    }
+
 
 
         /*
@@ -549,7 +561,53 @@ class PageEl extends OptionSetter {
     #writingMode() { return `writing-mode:${('horizontal'===this.dir) ? 'horizontal-tb' : 'vertical-rl' };` }
     #textOrientation() { return `text-orientation:${('horizontal'===this.dir) ? 'mixed' : 'upright' };` }
 }
+class CursorUi extends OptionSetter {
+    constructor(options) {
+        super()
+        this._o = options
+        this._cur = this._o.cursor // PageLoopCursor 
+        this._now = van.state(this._cur.ai)
+        this._all = van.state(this._cur.al)
+        this._dir = van.state('horizontal') // vertical
+        this.dir = this._o.dir
+        this._onPrev = ()=>{}
+        this._onNext = ()=>{}
+        this.setOption(options)
+    }
+    get now() { return this._now.val }
+    get all() { return this._all.val }
+    get dir() { return this._dir.val }
+    set now(v) { this._now.val = v }
+    set all(v) { this._all.val = v }
+    set dir(v) { if (['horizontal','vertical'].some(V=>V===v)) { this._dir.val = v } }l
+    get onPrev( ) { return this._onPrev }
+    set onPrev(v) { if(Type.isFn(v)){this._onPrev=v} }
+    get onNext( ) { return this._onNext }
+    set onNext(v) { if(Type.isFn(v)){this._onNext=v} }
 
+    make() { return van.tags.div({style:this.#style.bind(this)}, 
+        van.tags.button({onclick:(e)=>{
+            --this._cur.ai
+            this.now = this._cur.ai
+            console.log(`ai:${this._cur.ai}`)
+            this.onPrev(this._cur)
+            }}, this.#makePrevBtnTxt()),
+//        ()=>`${this.now}/${this.all}`,
+        this.#makePage.bind(this),
+        //van.tags.button({onclick:(e)=>{++this._cur.pi;this.now=this._cur.pi;console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+        van.tags.button({onclick:(e)=>{
+            ++this._cur.ai
+            this.now = this._cur.ai
+            this.onNext(this._cur)
+            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+    }
+    #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
+    #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
+    #makePage() { return `${this.now}/${this.all}` }
+    #style() { return this.#writingMode()+this.#textOrientation() }
+    #writingMode() { return `writing-mode:${('horizontal'===this.dir) ? 'horizontal-tb' : 'vertical-rl' };` }
+    #textOrientation() { return `text-orientation:${('horizontal'===this.dir) ? 'mixed' : 'upright' };` }
+}
 
 
 
