@@ -89,29 +89,18 @@ class PageLoopList {
             onSetHeight : ()=>{},
             onMakeChild: this._o.onMakeChild,
             onMouseEnter: (e)=>{
-                //this._el.focus()
                 this._listEl.ol.el.focus()
                 console.log(this._listEl.lis, e.target)
                 this._data.c.ri = this._listEl.lis.indexOf(e.target)
                 this.#show()
-//                this.#clear()
-                //const selected = this._listEl.lis.indexOf(e.target)
-//                const selected = this._listEl.lis.filter((li,i)=>li===e.target)[0]
-//                selected.classList.add('selected');
             },
             onMouseLeave: (e)=>{
-                //this.#clear()
             },
             onWheelUp: ()=>{this._data.c.pi--;this.#update();},
             onWheelDown: ()=>{this._data.c.pi++;this.#update();},
-//            onWheelUp: ()=>{this._data.c.pi--;this._listEl.remake(this._data);this.#show();this._pageEl.now=this._data.c.pi;},
-//            onWheelDown: ()=>{this._data.c.pi++;this._listEl.remake(this._data);this.#show();this._pageEl.now=this._data.c.pi;},
-
             onWheelLeft: ()=>{},
             onWheelRight: ()=>{},
             onKeyDown: (e)=>{
-//                     if ('ArrowUp'===e.key) {this._data.c.ri--;this.#update();}
-//                else if ('ArrowDown'===e.key) {this._data.c.ri++;this.#update();}
                      if ('ArrowUp'===e.key) {this._data.c.ai--;this.#update();}
                 else if ('ArrowDown'===e.key) {this._data.c.ai++;this.#update();}
                 else if ('ArrowLeft'===e.key) {this._data.c.pi--;this.#update();}
@@ -126,14 +115,10 @@ class PageLoopList {
         this._pageEl = new PageEl({
             cursor: this._data.c, 
             dir: this._o.pageDir ?? 'horizontal', 
-//            onPrev: (c)=>this._listEl.remake(this._data), 
-//            onNext: (c)=>this._listEl.remake(this._data),
-//            onPrev: (c)=>{this._data.c.back(); this._listEl.remake(this._data);}, 
-//            onNext: (c)=>{this._data.c.forward(); this._listEl.remake(this._data);},
             onPrev: (c)=>{this._listEl.remake(this._data);this.#show();}, 
             onNext: (c)=>{this._listEl.remake(this._data);this.#show();},
         })
-/*
+        /*
         this._config = {
             key: new ListKeyConfig(),
             pad: new ListPadConfig(),
@@ -150,43 +135,30 @@ class PageLoopList {
             // HTML要素とイベントを再作成する（表示領域内なら）
         }
         this._el = this.#make()
+
+        this._commands = {
+            'prevAi': ()=>{this._data.c.ai--;this.#update();},
+            'nextAi': ()=>{this._data.c.ai++;this.#update();},
+            'prevPage': ()=>{this._data.c.pi--;this.#update();},
+            'nextPage': ()=>{this._data.c.pi++;this.#update();},
+        }
     }
+    get el() { return this._el }
+    get c() { return this._data.c }
+    get data( ) { return this._data }
+    get commands() { return this._commands }
+
+    get paged() { return this._listEl.lis }
+    get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
+    #make() { return van.tags.div(this._listEl.make(this.data), this._pageEl.make()) }
     #update() {
         this._listEl.remake(this._data)
         this.#show()
         this._pageEl.now=this._data.c.pi;
         this._listEl.ol.el.focus()
     }
-    get el() { return this._el }
-    get c() { return this._data.c }
-    get data( ) { return this._data }
-
-    get paged() { return this._listEl.lis }
-    get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
     #show() {this.#clear(); this.selected.classList.add('selected');}
-    //#clear() {this._listEl.lis.filter(li=>li.classList.contains('selected')).map(li=>li.classList.remove('selected'))}
     #clear() {this._listEl.lis.map(li=>li.classList.remove('selected'))}
-
-//    get datas( ) { return this._data.d.d }
-//    set datas(v) { this._data.d.d = v }
-//    get data( ) { return this._data.d[this._cur.i] }
-//    set data(v) { this._data.setData(v, this._cur.i) }
-    /*
-    get ai() { return this.c.ai } // 相対カーソル（最大表示項目数に対するカーソル位置0〜N）
-    get ri() { return this.c.ri } // 絶対カーソル（全項目数に対するカーソル位置0〜N）
-    get pi() { return this.c.pi } // 現ページ数（1〜N）
-    get pl() { return this.c.pl } // 全ページ数（1〜N）
-    nextCursor() { this.ai++ }
-    prevCursor() { this.ai-- }
-    nextPage() { this.pi++ }
-    prevPage() { this.pi-- }
-    setCursor(i,p) {
-        if (i) { this._cur.i = i; }
-        if (p) { this._cur.p.i = p; }
-    }
-    */
-    //#make() { console.log(this.datas);return van.tags.div(this._listEl.make(this.datas), this._pageEl.make()) }
-    #make() { console.log(this.data);return van.tags.div(this._listEl.make(this.data), this._pageEl.make()) }
 }
 class ListEl {
     constructor(options) {
