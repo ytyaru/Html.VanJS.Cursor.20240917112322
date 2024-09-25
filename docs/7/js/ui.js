@@ -48,9 +48,7 @@ class OptionSetter {
 class PageLoopCursorData {
     constructor(options) {
         this._o = options
-        //this._cur = new PageLoopCursor(this._o.data.length, this._o.row)
         this._cur = new Cursor.Page.Loop(this._o.data.length, this._o.row)
-        //this._data = new ItemData(this._o.data, this._o.onValidData, (d)=>this._cur.al = d.length)
         this._data = new ItemData(this._o.data, this._o.onValidData)
     }
     get d() { return this._data }
@@ -90,7 +88,7 @@ class PageLoopList {
             onMakeChild: this._o.onMakeChild,
             onMouseEnter: (e)=>{
                 this._listEl.ol.el.focus()
-                console.log(this._listEl.lis, e.target)
+//                console.log(this._listEl.lis, e.target)
                 this._data.c.ri = this._listEl.lis.indexOf(e.target)
                 this.#show()
             },
@@ -100,6 +98,10 @@ class PageLoopList {
             onWheelDown: ()=>{this._data.c.pi++;this.#update();},
             onWheelLeft: ()=>{},
             onWheelRight: ()=>{},
+            onSwipeUp: ()=>this._commands.prevPage(),
+            onSwipeDown: ()=>this._commands.nextPage(),
+            onSwipeLeft: ()=>this._commands.prevPage(),
+            onSwipeRight: ()=>this._commands.nextPage(),
             onKeyDown: (e)=>{
                      if ('ArrowUp'===e.key) {this._data.c.ai--;this.#update();}
                 else if ('ArrowDown'===e.key) {this._data.c.ai++;this.#update();}
@@ -149,7 +151,7 @@ class PageLoopList {
     get commands() { return this._commands }
 
     get paged() { return this._listEl.lis }
-    get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
+    get selected() { return this._listEl.lis[this._data.c.ri] }
     #make() { return van.tags.div(this._listEl.make(this.data), this._pageEl.make()) }
     #update() {
         this._listEl.remake(this._data)
@@ -174,9 +176,12 @@ class ListEl {
             onWheelDown: this._o.onWheelDown,
             onWheelLeft: this._o.onWheelLeft,
             onWheelRight: this._o.onWheelRight,
+            onSwipeUp: this._o.onSwipeUp,
+            onSwipeDown: this._o.onSwipeDown,
+            onSwipeLeft: this._o.onSwipeLeft,
+            onSwipeRight: this._o.onSwipeRight,
             onKeyDown : this._o.onKeyDown,
         })
-        //this._lisCache = data.d.d.map((d,i)=>this._liEl.make(data.d.d[d],i))
         this._el = null
     }
     get el() { return this._el }
@@ -185,20 +190,6 @@ class ListEl {
     get lis() { return this._ol.lis }
     make(data) { this._el = this.ol.make(data); return this._el; }
     remake(data) { this.ol.remake(data) }
-    /*
-    make(data) {
-        console.log(`ListEl.make`)
-        if (this._el) { this.#delEvent() }
-        this._el = this.ol.make(data)
-        this.#addEvent()
-        return this._el
-    }
-    remake(data) {
-        if (this._el) { this.#delEvent() }
-        this.ol.remake(data)
-        this.#addEvent()
-    }
-    */
     #addEvent() {
         this._ol.addEvent()
         this._li.addEvent()
@@ -213,7 +204,6 @@ class OlEl extends OptionSetter  {
     constructor(options) {
         super()
         this._o = options
-        //this._data = this._o.data
         this._liEl = this._o.liEl
         this._num = {
             row: van.state(7),
@@ -225,6 +215,7 @@ class OlEl extends OptionSetter  {
         this._lis = null
         this._lisCache = null
         this._kdTime = Date.now()
+//        this._swipe = new Swipe(this.el)
         this.setOption(options)
     }
     get el() { return this._el }
@@ -234,25 +225,20 @@ class OlEl extends OptionSetter  {
     get onMake() { return this._onMake }
     set onMake(v) { if(Type.isFn(v)){this._onMake=v} }
     make(data) {
-        console.log(`OlEl.make`)
+//        console.log(`OlEl.make`)
         if (this._el) { this.delEvent() }
         this._el = van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data))
         this.addEvent()
         return this._el
     }
     remake(data) { this._el.replaceWith(this.make(data)) }
-    //make(data) { return van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data)) }
-    //#makeLis(data) { console.log(data);return [...Array(this._num.row)].map((_,i)=>this._liEl.make(data[i], i)) }
-    //#makeLis(data) { console.log(data, data.c.pageAis);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(d,i)) }
-    //#makeLis(data) { console.log(data, data.c.pageAis, data.d, data.d.d);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(data.d.d[d],i)) }
-    //#makeLis(data) { return data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i)) }
     #makeLis(data) {
-        console.log(`OlEl.#makeLis`, data)
+//        console.log(`OlEl.#makeLis`, data)
         if (this._lis) { this._lis.map(li=>this._liEl.delEvent(li)) }
         this._lis = data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i))
-        console.log(this._lis)
+//        console.log(this._lis)
         this._lis.map(li=>this._liEl.addEvent(li))
-        console.log(`OlEl.#makeLis end`)
+//        console.log(`OlEl.#makeLis end`)
         return this._lis
     }
 
@@ -264,10 +250,24 @@ class OlEl extends OptionSetter  {
         this.ol.addEventListener('mouseup', this.#onMouseUp.bind(this))
         this.ol.addEventListener('keydown', this.#onKeyDown.bind(this))
         */
-
         this.el.addEventListener('wheel', this.#onWheel.bind(this), {passive:false})
         //this.el.addEventListener('wheel', this._onWheel.bind(this), {passive:false})
         this.el.addEventListener('keydown', this.#onKeyDown.bind(this))
+
+        if (!this._swipe) {this._swipe = new Swipe(this.el)}
+//        if (this._swipe) {this._swipe.delEvent()}
+        if (this._swipe) {this._swipe.delEvent()}
+//        this._swipe = new Swipe(this.el)
+        this._swipe.target = this.el
+        this._swipe.addEvent()
+        this.el.addEventListener('swipe.up', this.#onSwipeUp.bind(this))
+        this.el.addEventListener('swipe.down', this.#onSwipeDown.bind(this))
+        this.el.addEventListener('swipe.left', this.#onSwipeLeft.bind(this))
+        this.el.addEventListener('swipe.right', this.#onSwipeRight.bind(this))
+//        this.el.addEventListener('touchstart', this.#onTouchStart.bind(this))
+//        this.el.addEventListener('touchmove', this.#onTouchMove.bind(this))
+//        this.el.addEventListener('touchcancel', this.#onTouchCancel.bind(this))
+//        this.el.addEventListener('touchend', this.#onTouchEnd.bind(this))
     }
     delEvent() {
         /*
@@ -279,9 +279,15 @@ class OlEl extends OptionSetter  {
         */
         this.el.removeEventListener('wheel', this.#onWheel.bind(this), {passive:false})
         this.el.removeEventListener('keydown', this.#onKeyDown.bind(this))
+
+        if (this._swipe) {this._swipe.delEvent()}
+        this.el.removeEventListener('swipe.up', this.#onSwipeUp.bind(this))
+        this.el.removeEventListener('swipe.down', this.#onSwipeDown.bind(this))
+        this.el.removeEventListener('swipe.left', this.#onSwipeLeft.bind(this))
+        this.el.removeEventListener('swipe.right', this.#onSwipeRight.bind(this))
     }
     #onWheel(e) {
-        console.log(`Wheel:`, e)
+//        console.log(`Wheel:`, e)
         this.el.focus()
         if (e.deltaY<0) { this.onWheelUp(e) }
         else if (0<e.deltaY) { this.onWheelDown(e) }
@@ -297,6 +303,14 @@ class OlEl extends OptionSetter  {
     set onWheelLeft(v) { if(Type.isFn(v)){this._onWheelLeft=v} }
     get onWheelRight( ) { return this._onWheelRight }
     set onWheelRight(v) { if(Type.isFn(v)){this._onWheelRight=v} }
+    get onSwipeUp( ) { return this._onSwipeUp }
+    set onSwipeUp(v) { if(Type.isFn(v)){this._onSwipeUp=v} }
+    get onSwipeDown( ) { return this._onSwipeDown }
+    set onSwipeDown(v) { if(Type.isFn(v)){this._onSwipeDown=v} }
+    get onSwipeLeft( ) { return this._onSwipeLeft }
+    set onSwipeLeft(v) { if(Type.isFn(v)){this._onSwipeLeft=v} }
+    get onSwipeRight( ) { return this._onSwipeRight }
+    set onSwipeRight(v) { if(Type.isFn(v)){this._onSwipeRight=v} }
     get onKeyDown( ) { return this._onKeyDown }
     set onKeyDown(v) { if(Type.isFn(v)){this._onKeyDown=v} }
     #onKeyDown(e, delay=150) {
@@ -304,10 +318,26 @@ class OlEl extends OptionSetter  {
         const diff = now - this._kdTime
         if (diff < delay) { return }
         this._kdTime = now
-        console.log(`keydown: ${e.key} ${this._kdTime}`)
+//        console.log(`keydown: ${e.key} ${this._kdTime}`)
         if (event.isComposing || event.keyCode === 229) {return} // IME変換中操作を無視する
         else {this.onKeyDown(e)}
         e.preventDefault()
+    }
+    #onSwipeUp(e) {
+        console.log(`onSwipeUp:`, e)
+        this.onSwipeUp(e)
+    }
+    #onSwipeDown(e) {
+        console.log(`onSwipeDown:`, e)
+        this.onSwipeDown(e)
+    }
+    #onSwipeLeft(e) {
+        console.log(`onSwipeLeft:`, e)
+        this.onSwipeLeft(e)
+    }
+    #onSwipeRight(e) {
+        console.log(`onSwipeRight:`, e)
+        this.onSwipeRight(e)
     }
 }
 // li要素
@@ -350,9 +380,10 @@ class LiEl extends OptionSetter {
     */
     //#style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;` }
     #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this.height}px;` }
-    #onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
+    //#onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
+    #onMakeChild(data,i) { return document.createTextNode(data.toString()) }
     addEvent(li) {
-        console.log(`LiEl.addEvent: `,li)
+//        console.log(`LiEl.addEvent: `,li)
         li.addEventListener('mouseenter', this._onMouseEnter)
         li.addEventListener('mouseleave', this._onMouseLeave)
 //        li.addEventListener('mouseenter', this._onMouseEnter.bind(this))
@@ -392,7 +423,7 @@ class LiEl extends OptionSetter {
     }
     */
     #onMouseEnter(e) {
-        console.log(`MouseEnter:`, e)
+//        console.log(`MouseEnter:`, e)
 //        this.ol.focus()
 //        this._y = [...e.target.parentElement.children].indexOf(e.target)
 //        console.log(`MouseEnter: y=${this._y}`)
@@ -400,7 +431,7 @@ class LiEl extends OptionSetter {
         this._onMouseEnter()
     }
     #onMouseLeave(e) {
-        console.log(`MouseLeave:`, e)
+//        console.log(`MouseLeave:`, e)
 //        this.#clear()
         this._onMouseLeave()
     }
@@ -417,7 +448,7 @@ class PageEl extends OptionSetter {
         this.dir = this._o.dir
         this._onPrev = ()=>{}
         this._onNext = ()=>{}
-        console.log(options, this.dir)
+//        console.log(options, this.dir)
         this.setOption(options)
     }
     get now() { return this._now.val }
@@ -436,7 +467,7 @@ class PageEl extends OptionSetter {
         van.tags.button({onclick:(e)=>{
             --this._cur.pi
             this.now = this._cur.pi
-            console.log(`pi:${this._cur.pi}`)
+//            console.log(`pi:${this._cur.pi}`)
             this.onPrev(this._cur)
             }}, this.#makePrevBtnTxt()),
 //        ()=>`${this.now}/${this.all}`,
@@ -446,7 +477,8 @@ class PageEl extends OptionSetter {
             ++this._cur.pi
             this.now = this._cur.pi
             this.onNext(this._cur)
-            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+//            console.log(`pi:${this._cur.pi}`);
+            }}, this.#makeNextBtnTxt()))
     }
     #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
     #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
@@ -483,7 +515,7 @@ class CursorUi extends OptionSetter {
         van.tags.button({onclick:(e)=>{
             --this._cur.ai
             this.now = this._cur.ai
-            console.log(`ai:${this._cur.ai}`)
+//            console.log(`ai:${this._cur.ai}`)
             this.onPrev(this._cur)
             }}, this.#makePrevBtnTxt()),
 //        ()=>`${this.now}/${this.all}`,
@@ -493,7 +525,8 @@ class CursorUi extends OptionSetter {
             ++this._cur.ai
             this.now = this._cur.ai
             this.onNext(this._cur)
-            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
+//            console.log(`pi:${this._cur.pi}`);
+            }}, this.#makeNextBtnTxt()))
     }
     #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
     #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
