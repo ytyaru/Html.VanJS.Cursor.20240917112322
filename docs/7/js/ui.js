@@ -90,7 +90,7 @@ class PageLoopList {
             onMakeChild: this._o.onMakeChild,
             onMouseEnter: (e)=>{
                 this._listEl.ol.el.focus()
-//                console.log(this._listEl.lis, e.target)
+                console.log(this._listEl.lis, e.target)
                 this._data.c.ri = this._listEl.lis.indexOf(e.target)
                 this.#show()
             },
@@ -149,8 +149,7 @@ class PageLoopList {
     get commands() { return this._commands }
 
     get paged() { return this._listEl.lis }
-    //get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
-    get selected() { return this._listEl.lis[this._data.c.ri] }
+    get selected() { console.log(this._data.c.ri);return this._listEl.lis[this._data.c.ri] }
     #make() { return van.tags.div(this._listEl.make(this.data), this._pageEl.make()) }
     #update() {
         this._listEl.remake(this._data)
@@ -235,7 +234,7 @@ class OlEl extends OptionSetter  {
     get onMake() { return this._onMake }
     set onMake(v) { if(Type.isFn(v)){this._onMake=v} }
     make(data) {
-//        console.log(`OlEl.make`)
+        console.log(`OlEl.make`)
         if (this._el) { this.delEvent() }
         this._el = van.tags.ol({tabindex:0, style:()=>`padding:0;margin:0;box-sizing:border-box;height:${this._liEl.height*this.row}px;overflow-y:auto;`}, this.#makeLis(data))
         this.addEvent()
@@ -248,12 +247,12 @@ class OlEl extends OptionSetter  {
     //#makeLis(data) { console.log(data, data.c.pageAis, data.d, data.d.d);return [...Array(data.c.pageAis)].map((d,i)=>this._liEl.make(data.d.d[d],i)) }
     //#makeLis(data) { return data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i)) }
     #makeLis(data) {
-//        console.log(`OlEl.#makeLis`, data)
+        console.log(`OlEl.#makeLis`, data)
         if (this._lis) { this._lis.map(li=>this._liEl.delEvent(li)) }
         this._lis = data.c.pageAis.map((d,i)=>this._liEl.make(data.d.d[d],i))
-//        console.log(this._lis)
+        console.log(this._lis)
         this._lis.map(li=>this._liEl.addEvent(li))
-//        console.log(`OlEl.#makeLis end`)
+        console.log(`OlEl.#makeLis end`)
         return this._lis
     }
 
@@ -282,7 +281,7 @@ class OlEl extends OptionSetter  {
         this.el.removeEventListener('keydown', this.#onKeyDown.bind(this))
     }
     #onWheel(e) {
-//        console.log(`Wheel:`, e)
+        console.log(`Wheel:`, e)
         this.el.focus()
         if (e.deltaY<0) { this.onWheelUp(e) }
         else if (0<e.deltaY) { this.onWheelDown(e) }
@@ -305,7 +304,7 @@ class OlEl extends OptionSetter  {
         const diff = now - this._kdTime
         if (diff < delay) { return }
         this._kdTime = now
-//        console.log(`keydown: ${e.key} ${this._kdTime}`)
+        console.log(`keydown: ${e.key} ${this._kdTime}`)
         if (event.isComposing || event.keyCode === 229) {return} // IME変換中操作を無視する
         else {this.onKeyDown(e)}
         e.preventDefault()
@@ -351,10 +350,9 @@ class LiEl extends OptionSetter {
     */
     //#style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this._size.height.val}px;` }
     #style() {return `list-style-type:none;box-sizing:border-box;border:1px solid black;height:${this.height}px;` }
-    //#onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
-    #onMakeChild(data,i) { return document.createTextNode(data.toString()) }
+    #onMakeChild(data,i) { console.log(data,i);return document.createTextNode(data.toString()) }
     addEvent(li) {
-//        console.log(`LiEl.addEvent: `,li)
+        console.log(`LiEl.addEvent: `,li)
         li.addEventListener('mouseenter', this._onMouseEnter)
         li.addEventListener('mouseleave', this._onMouseLeave)
 //        li.addEventListener('mouseenter', this._onMouseEnter.bind(this))
@@ -394,7 +392,7 @@ class LiEl extends OptionSetter {
     }
     */
     #onMouseEnter(e) {
-//        console.log(`MouseEnter:`, e)
+        console.log(`MouseEnter:`, e)
 //        this.ol.focus()
 //        this._y = [...e.target.parentElement.children].indexOf(e.target)
 //        console.log(`MouseEnter: y=${this._y}`)
@@ -402,7 +400,7 @@ class LiEl extends OptionSetter {
         this._onMouseEnter()
     }
     #onMouseLeave(e) {
-//        console.log(`MouseLeave:`, e)
+        console.log(`MouseLeave:`, e)
 //        this.#clear()
         this._onMouseLeave()
     }
@@ -419,7 +417,7 @@ class PageEl extends OptionSetter {
         this.dir = this._o.dir
         this._onPrev = ()=>{}
         this._onNext = ()=>{}
-//        console.log(options, this.dir)
+        console.log(options, this.dir)
         this.setOption(options)
     }
     get now() { return this._now.val }
@@ -438,7 +436,7 @@ class PageEl extends OptionSetter {
         van.tags.button({onclick:(e)=>{
             --this._cur.pi
             this.now = this._cur.pi
-//            console.log(`pi:${this._cur.pi}`)
+            console.log(`pi:${this._cur.pi}`)
             this.onPrev(this._cur)
             }}, this.#makePrevBtnTxt()),
 //        ()=>`${this.now}/${this.all}`,
@@ -448,8 +446,7 @@ class PageEl extends OptionSetter {
             ++this._cur.pi
             this.now = this._cur.pi
             this.onNext(this._cur)
-//            console.log(`pi:${this._cur.pi}`);
-            }}, this.#makeNextBtnTxt()))
+            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
     }
     #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
     #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
@@ -486,7 +483,7 @@ class CursorUi extends OptionSetter {
         van.tags.button({onclick:(e)=>{
             --this._cur.ai
             this.now = this._cur.ai
-//            console.log(`ai:${this._cur.ai}`)
+            console.log(`ai:${this._cur.ai}`)
             this.onPrev(this._cur)
             }}, this.#makePrevBtnTxt()),
 //        ()=>`${this.now}/${this.all}`,
@@ -496,8 +493,7 @@ class CursorUi extends OptionSetter {
             ++this._cur.ai
             this.now = this._cur.ai
             this.onNext(this._cur)
-//            console.log(`pi:${this._cur.pi}`);
-            }}, this.#makeNextBtnTxt()))
+            console.log(`pi:${this._cur.pi}`);}}, this.#makeNextBtnTxt()))
     }
     #makePrevBtnTxt() { return ('horizontal'===this.dir) ? '◀' : '▲' }
     #makeNextBtnTxt() { return ('horizontal'===this.dir) ? '▶' : '▼' }
