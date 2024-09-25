@@ -66,42 +66,30 @@ function handleButtonClick(button) {
 }
 
 let pdTime = Date.now()
+const delay = 200
 const gamepads = {};
 function readValues() {
   const cgs = navigator.getGamepads();
   const indexes = Object.keys(gamepads);
-  const delay = 500
-  //let pdTime = Date.now()
-  //let pdTime = 0
   for (let x = 0; x < indexes.length; x++) {
     const buttons = cgs[indexes[x]].buttons;
     const axes = cgs[indexes[x]].axes;
     for (let y = 0; y < buttons.length; y++) {
       if (buttons[y].pressed) {
-//        const now = Date.now()
-//        const diff = now - pdTime
-//        if (diff < delay) { return }
-//        pdTime = now
-
         console.log(`button ${y} pressed.`);
 //        document.querySelector("#events")
 //                .insertAdjacentHTML('afterbegin', `<div>Button ${y} pressed.</div>`);
         if (12<=y && y<=15) {
             const now = Date.now()
             const diff = now - pdTime
-            console.log(`diff:${diff} now:${now} pdTime:${pdTime}`)
-            //if (diff < delay) { return }
             if (delay < diff) {
                      if (12===y) { listUi.commands.prevAi() } // 上
                 else if (13===y) { listUi.commands.nextAi() } // 下
                 else if (14===y) { listUi.commands.prevPage() } // 左
                 else if (15===y) { listUi.commands.nextPage() } // 右
-            } else { pdTime = now }
+                pdTime = now
+            }
         }
-//             if (12===y) { listUi.commands.prevAi() } // 上
-//        else if (13===y) { listUi.commands.nextAi() } // 下
-//        else if (14===y) { listUi.commands.prevPage() } // 左
-//        else if (15===y) { listUi.commands.nextPage() } // 右
       }
     }
     for (let y = 0; y < axes.length; y++) {
@@ -132,8 +120,6 @@ window.addEventListener("gamepadconnected", (e)=>{
 //          .insertAdjacentHTML('afterbegin', '<div><b>Gamepad connected.</b></div>');
   gamepads[e.gamepad.index] = true;
   readValues();
-//  setInterval(readValues, 200)
-//  setInterval(()=>readValues(), 200)
 });
 window.addEventListener("gamepaddisconnected", (e)=>{
   console.log(`Gamepad disconnected: ${e.gamepad.id}`);
