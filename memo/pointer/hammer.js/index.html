@@ -1,0 +1,54 @@
+<script src="2.0.8/min.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+    /*
+    const mc = new Hammer.Manager(document.querySelector(`#target`), {
+        recognizers: [
+            // RecognizerClass, [options], [recognizeWith, ...], [requireFailure, ...]
+            [Hammer.Rotate],
+            [Hammer.Pinch, { enable: false }, ['rotate']],
+            //[Hammer.Swipe,{ direction: Hammer.DIRECTION_HORIZONTAL }],
+            [Hammer.Swipe,{ direction: Hammer.DIRECTION_ALL}],
+        ]
+    });
+    */
+    const hammer = new Hammer(document.querySelector(`#target`))
+    //hammer.get('swipe').set({ direction: Hammer.DIRECTION_VERTICAL });
+    hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL});
+    hammer.get('press').set({ time: 100});
+    /*
+    hammer.get('swipe').set({
+        direction: Hammer.DIRECTION_ALL,
+        threshold: 1,
+        velocity:0.1
+    });
+    */
+    hammer.on('tap', async(e)=>{
+        console.log('tap:', e)
+    })
+    hammer.on('press', async(e)=>{
+        console.log('press:', e)
+        e.preventDefault()
+        e.srcEvent.preventDefault()
+    })
+    hammer.on('pressup', async(e)=>{
+        console.log('pressup:', e)
+        e.preventDefault()
+        e.srcEvent.preventDefault()
+    })
+    hammer.on('swipeleft', async(e)=>{
+        console.log('swipeleft:', e)
+    })
+    hammer.on('swiperight', async(e)=>{
+        console.log('swiperight:', e)
+    })
+    hammer.on('swipeup', async(e)=>{
+        console.log('swipeup:', e)
+    })
+    hammer.on('swipedown', async(e)=>{
+        console.log('swipedown:', e)
+    })
+})
+</script>
+
+<p id="target" style="background-color:yellow;width:300px;height:300px;">これを動かす</p>

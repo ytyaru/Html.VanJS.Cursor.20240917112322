@@ -53,7 +53,53 @@ window.addEventListener('DOMContentLoaded', (event) => {
     })
     van.add(document.body, listUiA.el)
 
+    // gamepad
+    const gamepad = new GamePad({
+        onButtonDown:(idx, pad)=>{
+                 if (12===idx) { listUi.commands.prevAi() } // 上
+            else if (13===idx) { listUi.commands.nextAi() } // 下
+            else if (14===idx) { listUi.commands.prevPage() } // 左
+            else if (15===idx) { listUi.commands.nextPage() } // 右
+        },
+        onAxisMove:(idx, val, pad)=>{
+            console.log(idx, val, pad)
+        }
+    })
+    gamepad.addEvent()
 
+    // pointer
+    const hammer = new Hammer(listUi.el)
+    hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+    hammer.get('press').set({ time: 1000 });
+    hammer.on('tap', async(e)=>{
+        console.log('tap:', e)
+    })
+    hammer.on('press', async(e)=>{
+        console.log('press:', e)
+        e.preventDefault()
+        e.srcEvent.preventDefault()
+    })
+    hammer.on('pressup', async(e)=>{
+        console.log('pressup:', e)
+        e.preventDefault()
+        e.srcEvent.preventDefault()
+    })
+    hammer.on('swipeleft', async(e)=>{
+        console.log('swipeleft:', e)
+    })
+    hammer.on('swiperight', async(e)=>{
+        console.log('swiperight:', e)
+    })
+    hammer.on('swipeup', async(e)=>{
+        console.log('swipeup:', e)
+    })
+    hammer.on('swipedown', async(e)=>{
+        console.log('swipedown:', e)
+    })
+
+
+
+/*
 function handleButtonClick(button) {
   if (button.textContent === "Disconnect") {
     gamepadSimulator.disconnect();
@@ -126,6 +172,7 @@ window.addEventListener("gamepaddisconnected", (e)=>{
 //          .insertAdjacentHTML('afterbegin', '<div><b>Gamepad disconnected.</b></div>');
   delete gamepads[e.gamepad.index];
 });
+*/
 gamepadSimulator.create();
 gamepadSimulator.connect();
 
