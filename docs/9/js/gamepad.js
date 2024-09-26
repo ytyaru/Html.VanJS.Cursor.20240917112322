@@ -10,12 +10,9 @@ class GamePad {
         this._onAxisMove = Type.isFn(options.onAxisMove) ? options.onAxisMove : this.#onAxisMove.bind(this)
         this._delay = 200
         this._repeat = {
-            delay: 300, // リピート遅延時間ms
-            interval: 30, // リピート間隔ms
-            is: false, // リピート中か否か
-            start: Date.now(), // リピートを開始した時点(Date.now())
+            delay: 500, // リピート遅延時間ms
+            interval: 100, // リピート間隔ms
         }
-        //this._btnRepeats = [Array(pad.buttons.length)].map((_,i)=>{is:false, start: Date.now()})
         this._btnRepeats = []
         this._time = Date.now()
     }
@@ -24,50 +21,26 @@ class GamePad {
     onPoll() {
         console.log('onPoll')
         const now = Date.now()
-//        const diff = now - this._time
-//        console.log(navigator.getGamepads())
         for (let [idx, pad] of Object.entries(navigator.getGamepads())) {
             for (let b=0; b<pad.buttons.length; b++) {
                 if (pad.buttons[b].pressed) {
-//                        this._onButtonDown(b, pad)
-//                        this._time = now
-                    //if (this._repeat.delay < (now - this._btnRepeats[idx][b].start)) {
                     if (this._btnRepeats[idx][b].isPressed && this._repeat.delay < (now - this._btnRepeats[idx][b].pressedTime)) {
-                        //this._btnRepeats[idx][b].is = true
-                        this._btnRepeats[idx][b].isRepeating = true
+                        this._btnRepeats[idx][b].isRepeating = true; // リピート発火
                     }
-                    //if (this._btnRepeats[idx][b].is) {
-                    if (this._btnRepeats[idx][b].isRepeating) {
-                        if (this._repeat.interval < (now - this._btnRepeats[idx][b].start)) {
+                    if (this._btnRepeats[idx][b].isRepeating) { // リピート中
+                        if (this._repeat.interval < (now - this._btnRepeats[idx][b].pressedTime)) {
                             this._onButtonDown(b, pad)
+                            this._btnRepeats[idx][b].pressedTime = now
                         }
                     }
-                    else { // 非リピート（即時実行）
-                        this._onButtonDown(b, pad)
-                        //this._btnRepeats[idx][b].start = now
-                        this._btnRepeats[idx][b].isPressed = true
-                        this._btnRepeats[idx][b].pressedTime = now
-                    }
-                    /*
-                    if (this._btnRepeats[idx][b].is) {
-                        if (this._repeat.delay < (now - this._btnRepeats[idx][b].start)) {
-                            this._btnRepeats[idx][b].is = true
-                        }
-                        if (this._btnRepeats[idx][b].is) {
+                    else { // 非リピート（初回即時実行）
+                        if (!this._btnRepeats[idx][b].isPressed) {
                             this._onButtonDown(b, pad)
-                        }
-                        if 
-                            this._onButtonDown(b, pad)
-                            this._btnRepeats[idx][b].start = now
+                            this._btnRepeats[idx][b].isPressed = true
+                            this._btnRepeats[idx][b].pressedTime = now
                         }
                     }
-                    else { // 非リピート（即時実行）
-                        this._onButtonDown(b, pad)
-                        this._btnRepeats[idx][b].start = now
-                    }
-                    */
                 }
-                //else { this._btnRepeats[idx][b].is = false }
                 else {
                     this._btnRepeats[idx][b].isPressed = false
                     this._btnRepeats[idx][b].isRepeating = false
@@ -126,6 +99,45 @@ class GamePad {
         });
     }
 }
+/*
+class ButtonRepeat {
+    constructor(onButtonDown) {
+        this._states = []
+        this._onButtonDown = onButtonDown
+    }
+    add(pad) {
+        this._states.push([...Array(e.gamepad.buttons.length)].map((_,i)=>({
+            isPressed: false, // 最初に押下した
+            isRepeating: false, // リピート中である
+            pressedTime: Date.now(), // 最初に押下した時点
+        })))
+    }
+    onButtonDown(b, pad) {
+        if (pad.buttons[b].pressed) {
+            if (this._states[idx][b].isPressed && this._repeat.delay < (now - this._states[idx][b].pressedTime)) {
+                this._states[idx][b].isRepeating = true; // リピート発火
+            }
+            if (this._states[idx][b].isRepeating) { // リピート中
+                if (this._repeat.interval < (now - this._states[idx][b].pressedTime)) {
+                    this._onButtonDown(b, pad)
+                    this._states[idx][b].pressedTime = now
+                }
+            }
+            else { // 非リピート（初回即時実行）
+                if (!this._states[idx][b].isPressed) {
+                    this._onButtonDown(b, pad)
+                    this._states[idx][b].isPressed = true
+                    this._states[idx][b].pressedTime = now
+                }
+            }
+        }
+        else {
+            this._states[idx][b].isPressed = false
+            this._states[idx][b].isRepeating = false
+        }
+    }
+}
+*/
 class Command {
     constructor(ids) {
         this._ids = ids
