@@ -115,12 +115,20 @@ mapping: standard
 * https://u-mid.hateblo.jp/entry/2020/10/14/120232
 
 
-`RU`|`A`
-`RD`|`B`
-`RL`|``
-`RR`|``
+i|L|SFC|
+-|-|---|
+0|`RD`|`B`
+1|`RR`|`A`
+2|`RL`|`Y`
+3|`RU`|`X`
 
 
+FC|ファミコン
+SFC|スーファミ
+N64|
+C|
+
+PS1|
 
 　論理IDは物理配置された位置によって定義された名前にしたい。そうなると
 

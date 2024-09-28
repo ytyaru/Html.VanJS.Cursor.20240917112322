@@ -32,6 +32,7 @@ class GamepadManager {
         if (!this._pad) { return }
         if (oPad !== this._pad) { this.onChangedPad(e) }
         this.onLoop(e)
+        console.log(this._pads.length)
         if (0 < this._pads.length) { window.requestAnimationFrame(this.#onLoop.bind(this)) }
         /*
         //for (let [idx, pad] of Object.entries(navigator.getGamepads())) {
