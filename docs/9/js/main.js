@@ -173,8 +173,11 @@ window.addEventListener("gamepaddisconnected", (e)=>{
   delete gamepads[e.gamepad.index];
 });
 */
-gamepadSimulator.create();
-gamepadSimulator.connect();
+
+
+
+//gamepadSimulator.create();
+//gamepadSimulator.connect();
 
 })
 window.addEventListener('beforeunload', (event) => {

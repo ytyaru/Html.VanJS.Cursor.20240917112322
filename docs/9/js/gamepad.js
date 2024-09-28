@@ -19,9 +19,11 @@ class GamePad {
     get pads() { return this._pads }
     get pad() { return (this._idx) ? this._pads[idx] : null }
     onPoll() {
-        console.log('onPoll')
+//        console.log('onPoll')
         const now = Date.now()
         for (let [idx, pad] of Object.entries(navigator.getGamepads())) {
+            if (!pad) { continue }
+            // console.log(pad)
             for (let b=0; b<pad.buttons.length; b++) {
                 if (pad.buttons[b].pressed) {
                     if (this._btnRepeats[idx][b].isPressed && this._repeat.delay < (now - this._btnRepeats[idx][b].pressedTime)) {
@@ -96,6 +98,7 @@ class GamePad {
         target.addEventListener("gamepaddisconnected", (e)=>{
             console.log(`Gamepad disconnected: ${e.gamepad.id}`);
 //            delete gamepads[e.gamepad.index];
+            cancelAnimationFrame(this.onPoll.bind(this))
         });
     }
 }
