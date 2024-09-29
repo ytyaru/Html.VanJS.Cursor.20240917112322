@@ -1,0 +1,54 @@
+<style>
+.l { direction:ltr; }
+.r { direction:rtl; }
+.h { writing-mode: horizontal-tb; }
+.vrl { writing-mode: vertical-rl; }
+.vlr { writing-mode: vertical-lr; }
+.srl { writing-mode: sideways-rl; }
+.slr { writing-mode: sideways-lr; }
+.t:after { white-space:pre; content: '①②③④⑤\A⑥⑦⑧'; }
+</style>
+
+<p style=""></p>
+
+<table>
+<tr><th rowspan="2">writing-mode</th><th colspan="2">dir</th></tr>
+<tr><th>LTR</th><th>RTR</th></tr>
+<tr><td>horizontal-tb</td><td class="h l t"></td><td class="h r t"></td></tr>
+<tr><td>vertical-rl</td><td class="v l t"></td><td class="v r t"></td></tr>
+<tr><td>vertical-lr</td><td class="v l t"></td><td class="v r t"></td></tr>
+<tr><td>sideways-rl</td><td class="s l t"></td><td class="v r t"></td></tr>
+<tr><td>sideways-lr</td><td class="s l t"></td><td class="v r t"></td></tr>
+</table>
+
+<table>
+<tr><th rowspan="2">writing-mode</th><th colspan="2">dir</th></tr>
+<tr><th>LTR</th><th>RTR</th></tr>
+<tr><td>horizontal-tb</td><td class="h l">①②③④⑤<br>⑥⑦⑧</td><td class="h r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>vertical-rl</td><td class="v l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>vertical-lr</td><td class="v l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>sideways-rl</td><td class="s l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>sideways-lr</td><td class="s l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+</table>
+
+
+<table>
+<tr><th rowspan="2">writing-mode</th><th colspan="2">dir</th></tr>
+<tr><th>LTR</th><th>RTR</th></tr>
+<tr><td>horizontal-tb</td><td class="h l">①②③④⑤<br>⑥⑦⑧</td><td class="h r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>vertical-rl</td><td style="writing-mode:vertical-rl;">①②③④⑤<br>⑥⑦⑧</td><td class="t" style="direction:rtr;writing-mode:vertical-rl;"></td></tr>
+<tr><td>vertical-lr</td><td class="v l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>sideways-rl</td><td class="s l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+<tr><td>sideways-lr</td><td class="s l">①②③④⑤<br>⑥⑦⑧</td><td class="v r">①②③④⑤<br>⑥⑦⑧</td></tr>
+</table>
+
+<table>
+<tr><th rowspan="2">writing-mode</th><th colspan="2">dir</th></tr>
+<tr><th>LTR</th><th>RTR</th></tr>
+<tr><td>horizontal-tb</td><td class="h l t" style="writing-mode:horizontal-tb;"></td><td class="h r t" style="writing-mode:horizontal-tb;"></td></tr>
+<tr><td>vertical-rl</td><td class="v l t" style="writing-mode:vertical-rl;"></td><td class="v r t" style="writing-mode:vertical-rl;"></td></tr>
+<tr><td>vertical-lr</td><td class="v l t" style="writing-mode:vertical-lr;"></td><td class="v r t" style="writing-mode:vertical-lr;"></td></tr>
+<tr><td>sideways-rl</td><td class="s l t" style="writing-mode:sideways-rl;"></td><td class="v r t" style="writing-mode:sideways-rl;"></td></tr>
+<tr><td>sideways-lr</td><td class="s l t" style="writing-mode:sideways-lr;"></td><td class="v r t" style="writing-mode:sideways-lr;"></td></tr>
+</table>
+
