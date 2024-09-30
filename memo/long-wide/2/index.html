@@ -55,6 +55,14 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
     <p>本文<span class="L2">長体</span>正体</p>
 </dir>
 
+<p>画数の少ない全角<span class="S2">カタカナ</span>を半角サイズS2にすれば字数を稼ぎつつ視認性も保てる。</p>
+<p>Unicodeにある半角ｶﾀｶﾅを使っても解決できるが、次のような問題がある。</p>
+<ul>
+<li>文字コード自体が代わってしまう（テキスト検索などでヒットしない場面がある）
+<li>濁点、破裂音がそれぞれ別文字になってしまう場合がある（ガ、ｶﾞ）
+</ul>
+
+
 <h1>手動</h1>
 <p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:40px;">長体</span>正体</p>
 <p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:35px;">長体</span>正体</p>
