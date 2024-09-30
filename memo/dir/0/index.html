@@ -1,0 +1,51 @@
+<script src="../../../docs/lib/util/string/case.js"></script>
+<script src="dir.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+    const dir = new TextDir()
+    console.log(dir)
+    console.log(dir.rel.gets())
+    console.log(dir.rel.get('up'))
+    console.log(dir.rel.get('down'))
+    console.log(dir.rel.get('left'))
+    console.log(dir.rel.get('right'))
+
+    const rels = {
+        'ib': 'prevIndex',
+        'ia': 'nextIndex',
+        'bb': 'prevPage',
+        'ba': 'nextPage',
+    }
+    console.log([...Object.values(dir.rel.gets())].map(k=>rels[k]))
+    console.log([...Object.entries(dir.rel.gets())].map(([k,v])=>({[k]:rels[v]})))
+    console.log([...Object.entries(dir.rel.gets())].reduce((o,v,i)=>({...o, [v[0]]: v[1]}), {}))
+    console.log([...Object.entries(dir.rel.gets())].reduce((o,v,i)=>({...o, [v[0]]: rels[v[1]]}), {}))
+    console.log(dir.rel.convert(rels))
+    /*
+    const RELS = dir.rel.convert(rels)
+    this[RELS.up]() // this.prevPage()
+    'ArrowUp'==='e.key { list.commands[RELS.up]() }
+    'ArrowDown'==='e.key { list.commands[RELS.down]() }
+    'ArrowLeft'==='e.key { list.commands[RELS.left]() }
+    'ArrowRight'==='e.key { list.commands[RELS.right]() }
+
+    ()=>{
+        const DS = [...Object.keys(RELS)] // up,down,left,right
+        const CM = DS.map(d=>[(e)=>`Arrow${d.Title}`===e.key, ()=>{list.commands[RELS[d]]}]) // [cond, method]
+        ifel(CM.flat())
+    }
+    */
+    // 一次元リストの場合はこれでいいが二次元グリッドの場合は足りない。
+    // {
+    //    'x-': 'ArrowLeft'===e.key
+    //    'x+': 'ArrowRight'===e.key
+    //    'y-': 'ArrowUp'===e.key
+    //    'y+': 'ArrowDown'===e.key
+    //    'p-': 'PgDn'===e.key
+    //    'p+': 'PgUp'===e.key
+    // }
+    // x,yを移動して端以降に移動しようとしたとき、どうするか
+    // * 同一ページ内でループする
+    // * 前後ページへ遷移する
+});
+</script>
