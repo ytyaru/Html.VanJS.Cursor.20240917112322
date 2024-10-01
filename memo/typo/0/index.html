@@ -1,0 +1,72 @@
+<script src="../../../docs/lib/util/string/case.js"></script>
+<script src="ratext.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+    //const txtr = new Textrans()
+    const rat = new Ratext()
+});
+</script>
+
+<dir style="writing-mode:horizotal-tb;">
+    <h1>タイトル<span>短体</span>正体</h1>
+    <h1>タイトル<span class="S5">短体</span>正体</h1>
+    <h1>タイトル<span class="S4">短体</span>正体</h1>
+    <h1>タイトル<span class="S3">短体</span>正体</h1>
+    <h1>タイトル<span class="S2">短体</span>正体</h1>
+    <h1>タイトル<span>長体</span>正体</h1>
+    <h1>タイトル<span class="L5">長体</span>正体</h1>
+    <h1>タイトル<span class="L4">長体</span>正体</h1>
+    <h1>タイトル<span class="L3">長体</span>正体</h1>
+    <h1>タイトル<span class="L2">長体</span>正体</h1>
+
+    <p>本文<span>短体</span>正体</p>
+    <p>本文<span class="S5">短体</span>正体</p>
+    <p>本文<span class="S4">短体</span>正体</p>
+    <p>本文<span class="S3">短体</span>正体</p>
+    <p>本文<span class="S2">短体</span>正体</p>
+    <p>本文<span>長体</span>正体</p>
+    <p>本文<span class="L5">長体</span>正体</p>
+    <p>本文<span class="L4">長体</span>正体</p>
+    <p>本文<span class="L3">長体</span>正体</p>
+    <p>本文<span class="L2">長体</span>正体</p>
+</dir>
+
+<dir style="writing-mode:vertical-rl;">
+    <h1>タイトル<span>短体</span>正体</h1>
+    <h1>タイトル<span class="S5">短体</span>正体</h1>
+    <h1>タイトル<span class="S4">短体</span>正体</h1>
+    <h1>タイトル<span class="S3">短体</span>正体</h1>
+    <h1>タイトル<span class="S2">短体</span>正体</h1>
+    <h1>タイトル<span>長体</span>正体</h1>
+    <h1>タイトル<span class="L5">長体</span>正体</h1>
+    <h1>タイトル<span class="L4">長体</span>正体</h1>
+    <h1>タイトル<span class="L3">長体</span>正体</h1>
+    <h1>タイトル<span class="L2">長体</span>正体</h1>
+
+    <p>本文<span>短体</span>正体</p>
+    <p>本文<span class="S5">短体</span>正体</p>
+    <p>本文<span class="S4">短体</span>正体</p>
+    <p>本文<span class="S3">短体</span>正体</p>
+    <p>本文<span class="S2">短体</span>正体</p>
+    <p>本文<span>長体</span>正体</p>
+    <p>本文<span class="L5">長体</span>正体</p>
+    <p>本文<span class="L4">長体</span>正体</p>
+    <p>本文<span class="L3">長体</span>正体</p>
+    <p>本文<span class="L2">長体</span>正体</p>
+</dir>
+
+<p>画数の少ない全角<span class="S2">カタカナ</span>を半角サイズS2にすれば字数を稼ぎつつ視認性も保てる。</p>
+<p>Unicodeにある半角ｶﾀｶﾅを使っても解決できるが、次のような問題がある。</p>
+<ul>
+<li>文字コード自体が代わってしまう（テキスト検索などでヒットしない場面がある）
+<li>濁点、破裂音がそれぞれ別文字になってしまう場合がある（ガ、ｶﾞ）
+</ul>
+
+
+<h1>手動</h1>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:40px;">長体</span>正体</p>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:35px;">長体</span>正体</p>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:30px;overflow:hidden;">長体</span>正体</p>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:30px;overflow:hidden;padding:-10px;">長体</span>正体</p>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:30px;overflow:hidden;margin:-10px;">長体</span>正体</p>
+<p>本文<span style="transform:scaleY(0.8);transform-origin:top left;display:inline-block;inline-size:40px;margin-inline-end:-10px;">長体</span>正体</p>
